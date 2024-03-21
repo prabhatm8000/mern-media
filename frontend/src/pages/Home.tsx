@@ -63,6 +63,10 @@ const Home = () => {
             setPostsPage(1);
         }
     }, [postsPage]);
+
+    const handle = (str: string) => {
+        return str;
+    }
     return (
         <div>
             {/* posts */}
@@ -85,7 +89,7 @@ const Home = () => {
                                 key={i}
                                 className="py-4"
                             >
-                                <PostCard postData={data} />
+                                <PostCard handleDeleteBtn={handle} postData={data} />
                             </div>
                         );
                     }
@@ -94,7 +98,7 @@ const Home = () => {
                             key={i}
                             className="border-b py-4 border-neutral-900"
                         >
-                            <PostCard postData={data} />
+                            <PostCard handleDeleteBtn={handle} postData={data} />
                         </div>
                     );
                 })}

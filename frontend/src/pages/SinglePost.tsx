@@ -16,11 +16,14 @@ const SinglePost = () => {
         }
     );
 
+    const handle = (str: string) => {
+        return str;
+    };
     return (
         <div>
             {loadingPostData && <Loading />}
             {postData ? (
-                <PostCard postData={postData} />
+                <PostCard handleDeleteBtn={handle} postData={postData} />
             ) : (
                 <div>
                     <h2 className="text-3xl">Error: 404</h2>

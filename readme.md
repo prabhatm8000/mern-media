@@ -1,4 +1,4 @@
-Mern Hotel is a basic online Hotel Booking web app with stripe for payments.
+MernMedia is a basic social media web app.
 
 Demo
 [Click here](https://https://mern-media-vyah.onrender.com/)
@@ -16,9 +16,7 @@ Demo
 
 ## Features:
 - User authentication with JWT (JSON Web Token)
-- List your own Hotels
-- Track Bookings at your Hotels
-- Search Hotels by Name, city, state or country
-- Filter them with categories, star ratings and facilities
-- Book Hotels with stripe payment
-- Check your bookings
+- Edit your profile, add profile picture, description and links
+- Search and view profile
+- Post, comment and like post
+- See all the posts from people you follow
