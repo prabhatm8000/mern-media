@@ -24,7 +24,7 @@ const ImageCropper = ({
     const [croppedArea, setCroppedArea] = useState<Area>();
 
     const onCropComplete = (croppedArea: Area, croppedAreaPixels: Area) => {
-        setCroppedArea(croppedAreaPixels);
+        if (croppedArea) setCroppedArea(croppedAreaPixels);
     };
 
     return (

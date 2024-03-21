@@ -32,7 +32,7 @@ const FOLLOWERS_FOLLOWINGS_LIMIT = 5;
 const POSTS_LIMIT = 5;
 
 const Profile = () => {
-    const { currUserId, isLoggedIn } = useAppContext();
+    const { currUserId, isLoggedIn, showToast } = useAppContext();
     const { userId } = useParams();
 
     // profileData
@@ -76,6 +76,10 @@ const Profile = () => {
         fetchDoIFollow();
     }, [userId]);
     // #endregion
+
+    const [postCount, setPostCount] = useState<number | undefined>(
+        userData?.postCount
+    );
 
     const [showBottomList, setShowBottomList] = useState<
         "FOLLOWERS" | "FOLLOWINGS" | ""
@@ -257,6 +261,23 @@ const Profile = () => {
     }, [postsPage]);
     // #endregion
 
+    // delete post
+    const handlePostDeleteBtn = async (postId: string) => {
+        try {
+            await apiClient.deletePost(postId);
+            postsDispatch({
+                type: "SET_POSTS",
+                payload: posts.filter((item) => item._id !== postId),
+            });
+            setPostCount((prevValue) => {
+                if (prevValue) return prevValue - 1;
+            });
+            showToast({ type: "SUCCESS", message: "Comment deleted" });
+        } catch (error) {
+            showToast({ type: "ERROR", message: error as string });
+        }
+    };
+
     // reset followers, followings and posts when userId changes
     useEffect(() => {
         setShowBottomList("");
@@ -373,7 +394,7 @@ const Profile = () => {
                     </div>
                     <div className="flex items-center py-3 text-neutral-400 justify-between md:justify-start md:gap-4">
                         <span className="flex gap-1">
-                            <b className="text-white">{userData.postCount}</b>
+                            <b className="text-white">{postCount}</b>   
                             Posts
                         </span>
                         <span
@@ -497,7 +518,10 @@ const Profile = () => {
                                 key={i}
                                 className="py-4"
                             >
-                                <PostCard postData={data} />
+                                <PostCard
+                                    handleDeleteBtn={handlePostDeleteBtn}
+                                    postData={data}
+                                />
                             </div>
                         );
                     }
@@ -506,7 +530,10 @@ const Profile = () => {
                             key={i}
                             className="border-b py-4 border-neutral-900"
                         >
-                            <PostCard postData={data} />
+                            <PostCard
+                                handleDeleteBtn={handlePostDeleteBtn}
+                                postData={data}
+                            />
                         </div>
                     );
                 })}

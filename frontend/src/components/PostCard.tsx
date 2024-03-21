@@ -19,41 +19,19 @@ import * as apiClient from "../apiClient";
 
 // libs
 import { useHorizontalScroll } from "../lib/horizontalScroll";
-import { usePostsContext } from "../contexts/PostContext";
 import { GoDotFill } from "react-icons/go";
 import CommentBox from "./CommentBox";
 import { useCommentsContext } from "../contexts/CommentContext";
 
 interface PostCardProps {
     postData: PostType;
+    handleDeleteBtn: (postId: string) => void;
 }
 
-const PostCard = ({ postData }: PostCardProps) => {
+const PostCard = ({ postData, handleDeleteBtn }: PostCardProps) => {
     const scrollRef = useHorizontalScroll();
 
     const { currUserId, showToast } = useAppContext();
-
-    const { state: posts, dispatch: postDispatch } = usePostsContext();
-
-    // query for post delete
-    const { refetch: deletePost } = useQuery(
-        "deletePost",
-        () => apiClient.deletePost(postData._id),
-        {
-            enabled: false,
-            refetchOnWindowFocus: false,
-            onError: () => {
-                showToast({ message: "", type: "ERROR" });
-            },
-            onSuccess: () => {
-                showToast({ message: "Post deleted", type: "SUCCESS" });
-                postDispatch({
-                    type: "SET_POSTS",
-                    payload: posts.filter((item) => item._id !== postData._id),
-                });
-            },
-        }
-    );
 
     // likes
     // #region
@@ -96,9 +74,6 @@ const PostCard = ({ postData }: PostCardProps) => {
     // options
     // #region
     const [showOptions, setShowOptions] = useState<boolean>(false);
-    const handleDeleteBtn = () => {
-        deletePost();
-    };
 
     const handleShareBtn = async () => {
         const link = `${window.location.origin}/post/${postData._id}`;
@@ -120,7 +95,10 @@ const PostCard = ({ postData }: PostCardProps) => {
     return (
         <div className="flex gap-2">
             {/* profilePicture */}
-            <Link className="w-[30px] h-[30px]" to={`/profile/${postData.userId}`}>
+            <Link
+                className="w-[30px] h-[30px]"
+                to={`/profile/${postData.userId}`}
+            >
                 <img
                     className="w-[30px] h-[30px] rounded-full"
                     src={postData.profilePictureUrl}
@@ -226,7 +204,7 @@ const PostCard = ({ postData }: PostCardProps) => {
                             >
                                 {currUserId === postData.userId && (
                                     <button
-                                        onClick={handleDeleteBtn}
+                                        onClick={() => handleDeleteBtn(postData._id)}
                                         className="flex items-center gap-1 py-2 text-red-500 border-b border-neutral-700"
                                     >
                                         <MdDelete className="text-2xl" />
