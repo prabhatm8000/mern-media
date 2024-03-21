@@ -1,7 +1,7 @@
 MernMedia is a basic social media web app.
 
 Demo
-[Click here](https://https://mern-media-vyah.onrender.com/)
+[Click here](https://mern-media-vyah.onrender.com/)
 
 
 [UI sample](./sampleImages)
