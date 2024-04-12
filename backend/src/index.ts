@@ -12,6 +12,7 @@ import search from "./routes/search";
 import follow from "./routes/follow";
 import post from "./routes/post";
 import postComment from "./routes/postComment";
+import notifications from "./routes/notifications";
 
 mongoose.connect(process.env.MONGO_URI as string);
 
@@ -42,6 +43,7 @@ app.use("/api/search", search);
 app.use("/api/follow", follow);
 app.use("/api/post", post);
 app.use("/api/post-comment", postComment);
+app.use("/api/notifications", notifications);
 
 app.get("/", async (req: Request, res: Response) => {
     res.status(200).json({ message: "working" });

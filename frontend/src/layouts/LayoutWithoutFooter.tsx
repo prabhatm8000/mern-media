@@ -13,13 +13,13 @@ const LayoutWithoutFooter = ({ children }: LayoutWithoutFooterProps) => {
             </div>
             <div className="container mx-auto p-5 flex-1 relative">
                 {children}
-                <div className="fixed z-[100] w-full top-[0%]">
+                {/* <div className="fixed z-[100] w-full top-[0%]">
                     <div className="marquee-container w-96">
                         <div className="marquee">
                             <p className="text-3xl w-fit">Demo deployment</p>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

@@ -5,6 +5,7 @@ import Post from "../models/post";
 import UserAuth from "../models/userAuth";
 import UserData from "../models/userData";
 import Follow from "../models/follow";
+import Notification from "../models/notifications";
 
 export const addPost = async (req: Request, res: Response) => {
     try {
@@ -338,6 +339,16 @@ export const likeUnlike = async (req: Request, res: Response) => {
                 { $push: { likes: req.userId }, $inc: { likeCount: 1 } },
                 { new: true }
             );
+
+            // pushing notification for like to your post to the user who posted the post
+            await Notification.create({
+                userId: newData?.userId,
+                notificationForm: req.userId,
+                notificationFor: "liked your post.",
+                postId: postId,
+                at: new Date(),
+                readStatus: false,
+            });
             return res.status(200).json({ message: "Post liked" });
         } else {
             // already liked -> unlike

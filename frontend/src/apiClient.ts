@@ -3,6 +3,7 @@ import { SigninFormDataType } from "./pages/Signin";
 
 // types
 import {
+    NotificationsDataType,
     PostCommentUserDataType,
     PostType,
     UserDataBasicType,
@@ -388,6 +389,65 @@ export const deleteComment = async (commentId: string) => {
             credentials: "include",
         }
     );
+
+    if (!response.ok) {
+        const error = await response.json();
+        if (error.message) throw new Error(error.message);
+
+        throw new Error("Something went wrong");
+    }
+
+    return await response.json();
+};
+
+export const fetchDoIHaveNotifications = async (): Promise<{
+    response: {
+        doIHaveNotifications: boolean;
+    };
+}> => {
+    const response = await fetch(
+        `${API_BASE_URL}/api/notifications/doIHaveNotifications`,
+        {
+            credentials: "include",
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        if (error.message) throw new Error(error.message);
+
+        throw new Error("Something went wrong");
+    }
+
+    return await response.json();
+};
+
+export const fetchNotifications = async (
+    page: number,
+    limit: number
+): Promise<NotificationsDataType[]> => {
+    const response = await fetch(
+        `${API_BASE_URL}/api/notifications/?page=${page}&limit=${limit}`,
+        {
+            credentials: "include",
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        if (error.message) throw new Error(error.message);
+
+        throw new Error("Something went wrong");
+    }
+
+    return await response.json();
+};
+
+export const clearNotifications = async () => {
+    const response = await fetch(`${API_BASE_URL}/api/notifications/`, {
+        method: "DELETE",
+        credentials: "include",
+    });
 
     if (!response.ok) {
         const error = await response.json();

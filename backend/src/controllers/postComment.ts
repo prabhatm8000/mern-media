@@ -4,6 +4,7 @@ import PostComment from "../models/postComment";
 import Post from "../models/post";
 import UserData from "../models/userData";
 import UserAuth from "../models/userAuth";
+import Notification from "../models/notifications";
 
 export const addComment = async (req: Request, res: Response) => {
     const commentData: PostCommentType = req.body;
@@ -16,6 +17,18 @@ export const addComment = async (req: Request, res: Response) => {
             commentedOn: new Date(),
         });
         await user.save();
+
+        // pushing notification for like to your post to the user who posted the post
+        const post = await Post.findById(commentData.postId);
+        await Notification.create({
+            userId: post?.userId,
+            notificationForm: req.userId,
+            notificationFor: `commented '${commentData.comment}' on your post.`,
+            postId: commentData.postId,
+            commentId: user.id,
+            at: new Date(),
+            readStatus: false,
+        });
 
         await Post.findOneAndUpdate(
             { _id: commentData.postId },

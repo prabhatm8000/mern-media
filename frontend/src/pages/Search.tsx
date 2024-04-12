@@ -30,11 +30,13 @@ const Search = () => {
     );
 
     useEffect(() => {
+        let id: number;
         if (searchQuery.length > 1) {
-            fetchAutoComplete();
+            id = setTimeout(fetchAutoComplete, 1000);
         } else {
             setShowAutoComplete(false);
         }
+        return () => clearTimeout(id);
     }, [searchQuery]);
 
     const handleAutoCompleteClick = (e: MouseEvent<HTMLHeadingElement>) => {

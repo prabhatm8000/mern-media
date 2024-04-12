@@ -3,12 +3,10 @@ import Follow from "../models/follow";
 import UserData from "../models/userData";
 import UserAuth from "../models/userAuth";
 import { UserDataBasicType } from "../types/types";
+import Notification from "../models/notifications";
 
 export const followUnfollow = async (req: Request, res: Response) => {
     const { userId: followingUserId } = req.params;
-    // todo ->
-    // 1. add(follow) or remove(unfollow) to current users following Array and following users follower Array
-    // 2. increment or decrement followingCount in current users and followerCount in following users
     try {
         const currentUser = await Follow.findOne({
             userId: req.userId,
@@ -46,6 +44,15 @@ export const followUnfollow = async (req: Request, res: Response) => {
         currentUser?.save();
         followingUser?.save();
 
+        // pushing notification for new follower to followingUser
+        await Notification.create({
+            userId: followingUserId,
+            notificationForm: req.userId,
+            notificationFor: "started following you.",
+            at: new Date(),
+            readStatus: false,
+        });
+
         await UserData.findOneAndUpdate(
             { userId: req.userId },
             { $inc: { followingCount: 1 } }
@@ -81,7 +88,8 @@ export const doIFollow = async (req: Request, res: Response) => {
 };
 
 export const followers = async (req: Request, res: Response) => {
-    const userId = req.query.userId as string === "me" ? req.userId : req.query.userId
+    const userId =
+        (req.query.userId as string) === "me" ? req.userId : req.query.userId;
     const limit = parseInt(req.query.limit ? req.query.limit.toString() : "5");
     const page = parseInt(req.query.page ? req.query.page.toString() : "1");
     const skip = (page - 1) * limit;
@@ -134,7 +142,8 @@ export const followers = async (req: Request, res: Response) => {
 };
 
 export const followings = async (req: Request, res: Response) => {
-    const userId = req.query.userId as string === "me" ? req.userId : req.query.userId
+    const userId =
+        (req.query.userId as string) === "me" ? req.userId : req.query.userId;
     const limit = parseInt(req.query.limit ? req.query.limit.toString() : "5");
     const page = parseInt(req.query.page ? req.query.page.toString() : "1");
     const skip = (page - 1) * limit;

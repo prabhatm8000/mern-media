@@ -66,3 +66,16 @@ export type PostCommentUserDataType = {
     userId: string;
     postId: string;
 };
+
+export type NotificationsDataType = {
+    notificationFor: string;
+    notificationForm: {
+        userId: string;
+        username: string;
+        profilePictureUrl: string;
+    };
+    postId: string | undefined;
+    commentId: string | undefined;
+    at: Date;
+    readStatus: boolean;
+};
