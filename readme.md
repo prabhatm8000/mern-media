@@ -16,7 +16,9 @@ Demo
 
 ## Features:
 - User authentication with JWT (JSON Web Token)
-- Edit your profile, add profile picture, description and links
+- Edit your profile (add profile picture, description and links)
 - Search and view profile
-- Post, comment and like post
+- Posts
+- Likes and comments
 - See all the posts from people you follow
+- Notification (about likes, comments and follow actions)
