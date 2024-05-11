@@ -1,86 +1,124 @@
 import { Request, Response } from "express";
 import Follow from "../models/follow";
 import UserData from "../models/userData";
-import UserAuth from "../models/userAuth";
-import { UserDataBasicType } from "../types/types";
 import Notification from "../models/notifications";
+import mongoose, { startSession } from "mongoose";
 
 export const followUnfollow = async (req: Request, res: Response) => {
-    const { userId: followingUserId } = req.params;
+    const userId: unknown = req.params.userId;
+    const followingUserId = userId as mongoose.Types.ObjectId;
+
+    // using sessions and transactions to handle concurrency issue
+    const session = await startSession();
+
     try {
-        const currentUser = await Follow.findOne({
-            userId: req.userId,
-        });
-        const followingUser = await Follow.findOne({
-            userId: followingUserId,
-        });
+        session.startTransaction();
 
-        const index1 = currentUser?.followings.indexOf(
-            followingUserId as string
+        const currentUser = await Follow.findOne(
+            {
+                userId: req.userId,
+            },
+            null,
+            { session }
         );
-        const index2 = followingUser?.followers.indexOf(req.userId);
+        const followingUser = await Follow.findOne(
+            {
+                userId: followingUserId,
+            },
+            null,
+            { session }
+        );
 
-        if (index1 !== -1 && index2 !== -1) {
-            // if already following then unfollow
-            currentUser?.followings.splice(index1 ? (index1 as number) : 0, 1);
-            followingUser?.followers.splice(index2 ? (index2 as number) : 0, 1);
-            currentUser?.save();
-            followingUser?.save();
-
-            await UserData.findOneAndUpdate(
-                { userId: req.userId },
-                { $inc: { followingCount: -1 } }
-            );
-            await UserData.findOneAndUpdate(
-                { userId: followingUserId },
-                { $inc: { followerCount: -1 } }
-            );
-            return res.status(200).json({ doIFollow: false });
+        if (!currentUser || !followingUser) {
+            throw new Error("User not found");
         }
 
-        // else follow
-        currentUser?.followings.push(followingUserId as string);
-        followingUser?.followers.push(req.userId);
-        currentUser?.save();
-        followingUser?.save();
+        const isFollowing = currentUser.followings.includes(followingUserId);
+
+        if (isFollowing) {
+            // if already following then unfollow
+            currentUser.followings.pull(followingUserId);
+            followingUser.followers.pull(req.userId);
+        } else {
+            // else follow
+
+            currentUser.followings.push(followingUserId);
+            followingUser.followers.push(req.userId);
+        }
+
+        await currentUser.save({ session });
+        await followingUser.save({ session });
+
+        await UserData.findOneAndUpdate(
+            { userId: req.userId },
+            { $inc: { followingCount: isFollowing ? -1 : 1 } },
+            { session }
+        );
+        await UserData.findOneAndUpdate(
+            { userId: followingUserId },
+            { $inc: { followerCount: isFollowing ? -1 : 1 } },
+            { session }
+        );
+
+        res.status(200).json({ doIFollow: !isFollowing });
 
         // pushing notification for new follower to followingUser
         await Notification.create({
             userId: followingUserId,
-            notificationForm: req.userId,
+            notificationFormUserId: req.userId,
             notificationFor: "started following you.",
-            at: new Date(),
             readStatus: false,
         });
 
-        await UserData.findOneAndUpdate(
-            { userId: req.userId },
-            { $inc: { followingCount: 1 } }
-        );
-        await UserData.findOneAndUpdate(
-            { userId: followingUserId },
-            { $inc: { followerCount: 1 } }
-        );
-        res.status(200).json({ doIFollow: true });
+        await session.commitTransaction();
+        await session.endSession();
     } catch (error) {
+        await session.abortTransaction();
+        await session.endSession();
+
         console.log("error in follow ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
 
 export const doIFollow = async (req: Request, res: Response) => {
-    const { userId } = req.params;
+    const userId = req.params.userId as string;
+
+    if (userId === "me") {
+        return res.status(200).json();
+    }
+
     try {
-        const follow = await Follow.findOne({
-            userId: req.userId,
-        });
+        const follow = await Follow.aggregate([
+            {
+                $match: {
+                    userId: new mongoose.Types.ObjectId(req.userId),
+                },
+            },
+            {
+                $addFields: {
+                    doIFollow: {
+                        $in: [
+                            new mongoose.Types.ObjectId(userId),
+                            "$followings",
+                        ],
+                    },
+                },
+            },
+            {
+                $project: {
+                    doIFollow: 1,
+                },
+            },
+        ]);
 
-        const index = follow?.followings.indexOf(userId);
-
-        if (index !== -1) {
-            return res.status(200).json({ doIFollow: true });
+        if (follow.length <= 0) {
+            throw new Error("User not found");
         }
-        res.status(200).json({ doIFollow: false });
+
+        const doIFollow = follow[0].doIFollow;
+
+        res.status(200).json({ doIFollow });
     } catch (error) {
         console.log("error in doIFollow ", error);
         res.status(500).json({ message: "Something went wrong" });
@@ -89,108 +127,350 @@ export const doIFollow = async (req: Request, res: Response) => {
 
 export const followers = async (req: Request, res: Response) => {
     const userId =
-        (req.query.userId as string) === "me" ? req.userId : req.query.userId;
+        (req.query.userId as string) === "me"
+            ? req.userId
+            : (req.query.userId as string);
     const limit = parseInt(req.query.limit ? req.query.limit.toString() : "5");
     const page = parseInt(req.query.page ? req.query.page.toString() : "1");
     const skip = (page - 1) * limit;
 
     try {
-        const follow = await Follow.findOne({ userId: userId });
-
-        if (!follow) {
-            return res.status(404).json({ message: "Followers not found" });
-        }
-
-        const users = await UserAuth.find(
-            { _id: { $in: follow.followers } },
-            { _id: 1, username: 1 }
-        )
-            .skip(skip)
-            .limit(limit);
-
-        const userDatas = await UserData.find(
+        const follow = await Follow.aggregate([
             {
-                userId: { $in: users.map((item) => item._id) },
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                },
             },
-            { name: 1, profilePictureUrl: 1, userId: 1 }
-        );
+            {
+                $lookup: {
+                    from: "UserAuth",
+                    let: { followers: "$followers" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $in: ["$_id", "$$followers"], // Reference the followings array from the outer document
+                                },
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: "UserData",
+                                localField: "_id",
+                                foreignField: "userId",
+                                as: "userData",
+                            },
+                        },
+                        {
+                            $unwind: "$userData", // Unwind the array to access individual elements
+                        },
+                        {
+                            $project: {
+                                username: 1,
+                                name: "$userData.name",
+                                profilePictureUrl:
+                                    "$userData.profilePictureUrl",
+                            },
+                        },
+                    ],
+                    as: "userAuthData",
+                },
+            },
+            {
+                $unwind: "$userAuthData", // Unwind the array to access individual elements
+            },
+            {
+                $project: {
+                    userId: "$userAuthData._id",
+                    username: "$userAuthData.username",
+                    name: "$userAuthData.name",
+                    profilePictureUrl: "$userAuthData.profilePictureUrl",
+                },
+            },
+            {
+                $skip: skip,
+            },
+            {
+                $limit: limit,
+            },
+        ]);
 
-        const response: UserDataBasicType[] = userDatas.map((userData, i) => {
-            let username: string = "";
-
-            for (let index = 0; index < users.length; index++) {
-                if (users[index]._id.toString() === userData.userId) {
-                    username = users[index].username;
-                    break;
-                }
-            }
-
-            return {
-                _id: userData._id,
-                name: userData.name,
-                profilePictureUrl: userData.profilePictureUrl,
-                userId: userData.userId,
-                username,
-            };
-        });
-
-        res.status(200).json(response);
+        res.status(200).json(follow);
     } catch (error) {
-        console.log("error while search followers ", error);
+        console.log("error while followers ", error);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
+export const searchFollowers = async (req: Request, res: Response) => {
+    const limit = parseInt(req.query.limit ? req.query.limit.toString() : "5");
+    const page = parseInt(req.query.page ? req.query.page.toString() : "1");
+    const skip = (page - 1) * limit;
+
+    try {
+        const userId =
+            (req.query.userId as string) === "me"
+                ? req.userId
+                : (req.query.userId as string);
+        // query -> username, name
+        const query = req.query.query as string;
+
+        const follow = await Follow.aggregate([
+            {
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                },
+            },
+            {
+                $lookup: {
+                    from: "UserAuth",
+                    let: { followers: "$followers" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $in: ["$_id", "$$followers"], // Reference the followings array from the outer document
+                                },
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: "UserData",
+                                localField: "_id",
+                                foreignField: "userId",
+                                as: "userData",
+                            },
+                        },
+                        {
+                            $unwind: "$userData", // Unwind the array to access individual elements
+                        },
+                        {
+                            $project: {
+                                username: 1,
+                                name: "$userData.name",
+                                profilePictureUrl:
+                                    "$userData.profilePictureUrl",
+                            },
+                        },
+                    ],
+                    as: "userAuthData",
+                },
+            },
+            {
+                $unwind: "$userAuthData", // Unwind the array to access individual elements
+            },
+            {
+                $match: {
+                    $or: [
+                        {
+                            "userAuthData.name": {
+                                $regex: `.*${query}.*`,
+                                $options: "i",
+                            },
+                        },
+                        {
+                            "userAuthData.username": {
+                                $regex: `.*${query}.*`,
+                                $options: "i",
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $project: {
+                    userId: "$userAuthData._id",
+                    username: "$userAuthData.username",
+                    name: "$userAuthData.name",
+                    profilePictureUrl: "$userAuthData.profilePictureUrl",
+                },
+            },
+            {
+                $skip: skip,
+            },
+            {
+                $limit: limit,
+            },
+        ]);
+
+        res.status(200).json(follow);
+    } catch (error) {
+        console.log("error while searching followers ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
 
 export const followings = async (req: Request, res: Response) => {
     const userId =
-        (req.query.userId as string) === "me" ? req.userId : req.query.userId;
+        (req.query.userId as string) === "me"
+            ? req.userId
+            : (req.query.userId as string);
     const limit = parseInt(req.query.limit ? req.query.limit.toString() : "5");
     const page = parseInt(req.query.page ? req.query.page.toString() : "1");
     const skip = (page - 1) * limit;
 
     try {
-        const follow = await Follow.findOne({ userId: userId });
-
-        if (!follow) {
-            return res.status(404).json({ message: "Followers not found" });
-        }
-
-        const users = await UserAuth.find(
-            { _id: { $in: follow.followings } },
-            { _id: 1, username: 1 }
-        )
-            .skip(skip)
-            .limit(limit);
-
-        const userDatas = await UserData.find(
+        const follow = await Follow.aggregate([
             {
-                userId: { $in: users.map((item) => item._id) },
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                },
             },
-            { name: 1, profilePictureUrl: 1, userId: 1 }
-        );
+            {
+                $lookup: {
+                    from: "UserAuth",
+                    let: { followings: "$followings" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $in: ["$_id", "$$followings"], // Reference the followings array from the outer document
+                                },
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: "UserData",
+                                localField: "_id",
+                                foreignField: "userId",
+                                as: "userData",
+                            },
+                        },
+                        {
+                            $unwind: "$userData", // Unwind the array to access individual elements
+                        },
+                        {
+                            $project: {
+                                username: 1,
+                                name: "$userData.name",
+                                profilePictureUrl:
+                                    "$userData.profilePictureUrl",
+                            },
+                        },
+                    ],
+                    as: "userAuthData",
+                },
+            },
+            {
+                $unwind: "$userAuthData", // Unwind the array to access individual elements
+            },
+            {
+                $project: {
+                    userId: "$userAuthData._id",
+                    username: "$userAuthData.username",
+                    name: "$userAuthData.name",
+                    profilePictureUrl: "$userAuthData.profilePictureUrl",
+                },
+            },
+            {
+                $skip: skip,
+            },
+            {
+                $limit: limit,
+            },
+        ]);
 
-        const response: UserDataBasicType[] = userDatas.map((userData, i) => {
-            let username: string = "";
-
-            for (let index = 0; index < users.length; index++) {
-                if (users[index]._id.toString() === userData.userId) {
-                    username = users[index].username;
-                    break;
-                }
-            }
-
-            return {
-                _id: userData._id,
-                name: userData.name,
-                profilePictureUrl: userData.profilePictureUrl,
-                userId: userData.userId,
-                username,
-            };
-        });
-
-        res.status(200).json(response);
+        res.status(200).json(follow);
     } catch (error) {
-        console.log("error while search followings ", error);
+        console.log("error while followings ", error);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
+export const searchFollowings = async (req: Request, res: Response) => {
+    const limit = parseInt(req.query.limit ? req.query.limit.toString() : "5");
+    const page = parseInt(req.query.page ? req.query.page.toString() : "1");
+    const skip = (page - 1) * limit;
+
+    try {
+        const userId =
+            (req.query.userId as string) === "me"
+                ? req.userId
+                : (req.query.userId as string);
+        // query -> username, name
+        const query = req.query.query as string;
+
+        const follow = await Follow.aggregate([
+            {
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                },
+            },
+            {
+                $lookup: {
+                    from: "UserAuth",
+                    let: { followings: "$followings" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $in: ["$_id", "$$followings"], // Reference the followings array from the outer document
+                                },
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: "UserData",
+                                localField: "_id",
+                                foreignField: "userId",
+                                as: "userData",
+                            },
+                        },
+                        {
+                            $unwind: "$userData", // Unwind the array to access individual elements
+                        },
+                        {
+                            $project: {
+                                username: 1,
+                                name: "$userData.name",
+                                profilePictureUrl:
+                                    "$userData.profilePictureUrl",
+                            },
+                        },
+                    ],
+                    as: "userAuthData",
+                },
+            },
+            {
+                $unwind: "$userAuthData", // Unwind the array to access individual elements
+            },
+            {
+                $match: {
+                    $or: [
+                        {
+                            "userAuthData.name": {
+                                $regex: `.*${query}.*`,
+                                $options: "i",
+                            },
+                        },
+                        {
+                            "userAuthData.username": {
+                                $regex: `.*${query}.*`,
+                                $options: "i",
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $project: {
+                    userId: "$userAuthData._id",
+                    username: "$userAuthData.username",
+                    name: "$userAuthData.name",
+                    profilePictureUrl: "$userAuthData.profilePictureUrl",
+                },
+            },
+            {
+                $skip: skip,
+            },
+            {
+                $limit: limit,
+            },
+        ]);
+
+        res.status(200).json(follow);
+    } catch (error) {
+        console.log("error while searching followings ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

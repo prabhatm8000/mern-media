@@ -1,16 +1,18 @@
+import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { BiSearch } from "react-icons/bi";
 import { useQuery } from "react-query";
 import * as apiClient from "../apiClient";
-import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import SearchResultCard from "../components/SearchResultCard";
-import Loading from "../components/Loading";
+import SearchResultCardLoading from "../components/skeletonLoadings/SearchResultCardLoading";
 import { useSearchResultContext } from "../contexts/SearchContext";
 
-const SEARCH_LIMIT = 5;
+const SEARCH_LIMIT = 10;
 
 const Search = () => {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [showAutoComplete, setShowAutoComplete] = useState<boolean>(false);
+    const [autoCompleteClicked, setAutoCompleteClicked] =
+        useState<boolean>(false);
 
     // autocomplete
     // #region
@@ -18,7 +20,7 @@ const Search = () => {
         "gettingSearchAutoComplete",
         () => apiClient.searchAutoComplete(searchQuery),
         {
-            enabled: searchQuery.length > 1,
+            enabled: false,
             refetchOnWindowFocus: false,
             onSuccess: () => {
                 setShowAutoComplete(true);
@@ -30,17 +32,25 @@ const Search = () => {
     );
 
     useEffect(() => {
-        let id: number;
-        if (searchQuery.length > 1) {
-            id = setTimeout(fetchAutoComplete, 1000);
+        let id: string | number | NodeJS.Timeout | undefined;
+        if (searchQuery.length > 1 && !autoCompleteClicked) {
+            // debouncing
+            id = setTimeout(fetchAutoComplete, 1500);
         } else {
             setShowAutoComplete(false);
         }
-        return () => clearTimeout(id);
-    }, [searchQuery]);
+        return () => {
+            clearTimeout(id);
+            if (autoCompleteClicked) {
+                setAutoCompleteClicked(false);
+            }
+        };
+    }, [searchQuery, autoCompleteClicked]);
 
     const handleAutoCompleteClick = (e: MouseEvent<HTMLHeadingElement>) => {
+        setAutoCompleteClicked(true);
         setSearchQuery(e.currentTarget.innerText);
+        handleSearchBtn();
     };
     // #endregion
 
@@ -61,7 +71,7 @@ const Search = () => {
         }
     );
 
-    const handleSubmitBtn = () => {
+    const handleSearchBtn = () => {
         setShowAutoComplete(false);
         setHasMore(true);
         dispatch({ type: "RESET" });
@@ -98,6 +108,7 @@ const Search = () => {
                         payload: [...searchResults, ...result.data],
                     });
                     if (result.data.length < SEARCH_LIMIT) setHasMore(false);
+                    setSearchBtnClicked(false);
                 } else setHasMore(false);
             });
         }
@@ -105,20 +116,21 @@ const Search = () => {
     // #endregion
 
     return (
-        <div>
+        // {pt-16 md:pt-0} <- for top nav bar in mobile screen
+        <div className="pt-16 md:pt-4 p-4 overflow-hidden h-screen grid grid-rows-[50px_1fr] gap-4">
             {/* search input form section */}
-            <div className="flex flex-col">
+            <div className="flex flex-col relative">
                 {/* search input form */}
                 <form
                     className="flex justify-center"
                     onSubmit={(e) => {
                         e.preventDefault();
-                        handleSubmitBtn();
+                        handleSearchBtn();
                     }}
                 >
                     <input
                         autoFocus
-                        className="px-3 py-1 text-md bg-neutral-700 rounded-s-full md:w-[400px] lg:md:w-[600px] focus:outline-none"
+                        className="px-6 py-2 text-lg bg-black2 placeholder:text-whiteAlpha1 border border-e-0 border-whiteAlpha2 rounded-s-full md:w-[400px] lg:md:w-[600px] focus:outline-none"
                         type="text"
                         placeholder="Search"
                         value={searchQuery}
@@ -127,10 +139,10 @@ const Search = () => {
                         }
                     />
                     <button
-                        className="text-2xl bg-neutral-700 py-1 px-2 rounded-e-full"
+                        className="bg-black2 px-4 border border-s-0 border-whiteAlpha2 rounded-e-full"
                         type="submit"
                     >
-                        <BiSearch />
+                        <BiSearch className="size-6" />
                     </button>
                 </form>
 
@@ -160,14 +172,11 @@ const Search = () => {
                 )}
             </div>
 
-            {/* todo: SearchResults */}
-            {searchResults.length > 0 && (
-                <div className="flex flex-col items-center gap-3 mt-4">
-                    <h3 className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
-                        <i className="text-neutral-400">Search Result for: </i>
-                        {searchQuery}
-                    </h3>
-                    {searchResults.map((searchResult, i) => {
+            {/* SearchResults */}
+
+            <div className="flex flex-col overflow-y-auto overflow-x-hidden items-center gap-3 rounded-lg border border-whiteAlpha2 p-4">
+                {searchResults.length > 0 &&
+                    searchResults.map((searchResult, i) => {
                         if (searchResults.length === i + 1) {
                             return (
                                 <div
@@ -190,10 +199,21 @@ const Search = () => {
                             </div>
                         );
                     })}
-                </div>
-            )}
 
-            {loadingResults && <Loading />}
+                {loadingResults && (
+                    <>
+                        <div className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
+                            <SearchResultCardLoading />
+                        </div>
+                        <div className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
+                            <SearchResultCardLoading />
+                        </div>
+                        <div className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
+                            <SearchResultCardLoading />
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 };

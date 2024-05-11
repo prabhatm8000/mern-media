@@ -1,15 +1,20 @@
 // react
-import { Link, useParams } from "react-router-dom";
-import { useQuery } from "react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BiCalendar, BiImage, BiLink, BiPlus } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
+import { BiCalendar, BiImage, BiLink } from "react-icons/bi";
+import { MdEdit } from "react-icons/md";
+import { useQuery } from "react-query";
+import { Link, useParams } from "react-router-dom";
+import gsap from "gsap";
 
 // api
 import * as apiClient from "../apiClient";
 
 // type
-import { UserDataType } from "../../../backend/src/types/types";
+import {
+    UserDataType,
+    type UserDataBasicType,
+} from "../../../backend/src/types/types";
 
 // image
 import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
@@ -24,16 +29,26 @@ import { useFollowingsContext } from "../contexts/FollowingsContext";
 import { usePostsContext } from "../contexts/PostContext";
 
 // components
-import Loading from "../components/Loading";
 import PostCard from "../components/PostCard";
 import SearchResultCard from "../components/SearchResultCard";
+import FadeBG from "../components/FadeBG";
+import PostCardLoading from "../components/skeletonLoadings/PostCardLoading";
+import ProfileLoading from "../components/skeletonLoadings/ProfileLoading";
+import SearchResultCardLoading from "../components/skeletonLoadings/SearchResultCardLoading";
+import LoadingCircleSvg from "../components/LoadingCircleSvg";
 
 const FOLLOWERS_FOLLOWINGS_LIMIT = 5;
 const POSTS_LIMIT = 5;
 
 const Profile = () => {
-    const { currUserId, isLoggedIn, showToast } = useAppContext();
+    const { currUserId, showToast } = useAppContext();
     const { userId } = useParams();
+
+    const [doIFollowData, setDoIFollowData] = useState<{
+        doIFollow: boolean;
+    }>();
+    const [postCount, setPostCount] = useState<number>(0);
+    const [fetchingDoIFollow, setFetchingDoIFollow] = useState<boolean>(false);
 
     // profileData
     // #region
@@ -54,43 +69,69 @@ const Profile = () => {
         }
     );
 
-    const {
-        data: doIFollowData,
-        refetch: fetchDoIFollow,
-        isFetching: fetchingDoIFollow,
-    } = useQuery(
-        "fetchDoIFollow",
-        () => apiClient.doIFollow(userId ? userId : ""),
-        {
-            enabled: !!userId,
-            refetchOnWindowFocus: false,
-        }
-    );
+    useEffect(() => {
+        setPostCount(userData ? userData.postCount : 0);
+    }, [userData]);
 
     const handleFollowBtn = async () => {
-        await apiClient.followUnfollow(userId as string);
-        fetchDoIFollow();
+        setFetchingDoIFollow(true);
+        const data = await apiClient.followUnfollow(userId as string);
+        setDoIFollowData(data);
+        setFetchingDoIFollow(false);
     };
 
     useEffect(() => {
-        fetchDoIFollow();
+        apiClient
+            .doIFollow(userId ? userId : "")
+            .then((data) => setDoIFollowData(data));
     }, [userId]);
     // #endregion
 
-    const [postCount, setPostCount] = useState<number | undefined>(
-        userData?.postCount
-    );
+    const bottomListDivRef = useRef<HTMLDivElement>(null);
 
     const [showBottomList, setShowBottomList] = useState<
         "FOLLOWERS" | "FOLLOWINGS" | ""
     >("");
 
+    useEffect(() => {
+        if (showBottomList !== "") {
+            gsap.to(bottomListDivRef.current || {}, {
+                duration: 0.1,
+                ease: "power.inOut",
+                paddingTop: 6,
+                paddingBottom: 6,
+                paddingLeft: 6,
+                paddingRight: 6,
+                height: "60vh",
+                y: "0px",
+            });
+        } else {
+            gsap.to(bottomListDivRef.current || {}, {
+                duration: 0.1,
+                ease: "power.inOut",
+                paddingTop: 0,
+                paddingBottom: 0,
+                paddingLeft: 0,
+                paddingRight: 0,
+                height: "0px",
+                y: "600px",
+            });
+        }
+    }, [showBottomList]);
+
+    const [searchQuery, setSearchQuery] = useState<string>("");
+
     // followers
     // #region
     const [followersPage, setFollowersPage] = useState<number>(1);
-    const { state: followers, dispatch: followersDispatch } =
-        useFollowersContext();
     const [hasMoreFollowers, setHasMoreFollowers] = useState<boolean>(true);
+    const { state: followersState, dispatch: followersDispatch } =
+        useFollowersContext();
+    const [followers, setFollowers] = useState<UserDataBasicType[]>([]);
+
+    useEffect(() => {
+        setFollowers(followersState);
+    }, [followersState]);
 
     const { refetch: fetchFollowers, isFetching: loadingFollowers } = useQuery(
         "fetchingFollowers",
@@ -147,9 +188,14 @@ const Profile = () => {
     // followings
     // #region
     const [followingsPage, setFollowingsPage] = useState<number>(1);
-    const { state: followings, dispatch: followingsDispatch } =
-        useFollowingsContext();
     const [hasMoreFollowings, setHasMoreFollowings] = useState<boolean>(true);
+    const { state: followingsState, dispatch: followingsDispatch } =
+        useFollowingsContext();
+    const [followings, setFollowings] = useState<UserDataBasicType[]>([]);
+
+    useEffect(() => {
+        setFollowings(followingsState);
+    }, [followingsState]);
 
     const { refetch: fetchFollowings, isFetching: loadingFollowings } =
         useQuery(
@@ -202,6 +248,71 @@ const Profile = () => {
             setFollowingsPage(1);
         }
     }, [followingsPage]);
+    // #endregion
+
+    // search
+    // #region
+    const { refetch: searchFollower, isFetching: searchingFollowers } =
+        useQuery(
+            "searchChats",
+            () =>
+                apiClient.searchFollower(
+                    1,
+                    FOLLOWERS_FOLLOWINGS_LIMIT,
+                    userId as string,
+                    searchQuery
+                ),
+            {
+                enabled: false,
+                refetchOnWindowFocus: false,
+                keepPreviousData: true,
+            }
+        );
+
+    const { refetch: searchFollowing, isFetching: searchingFollowings } =
+        useQuery(
+            "searchChats",
+            () =>
+                apiClient.searchFollowing(
+                    1,
+                    FOLLOWERS_FOLLOWINGS_LIMIT,
+                    userId as string,
+                    searchQuery
+                ),
+            {
+                enabled: false,
+                refetchOnWindowFocus: false,
+                keepPreviousData: true,
+            }
+        );
+
+    useEffect(() => {
+        const search = () => {
+            if (showBottomList === "FOLLOWERS") {
+                searchFollower().then((result) => {
+                    if (result.data) setFollowers([...result.data]);
+                });
+            }
+            if (showBottomList === "FOLLOWINGS") {
+                searchFollowing().then((result) => {
+                    if (result.data) setFollowings([...result.data]);
+                });
+            }
+        };
+
+        let intervalId: string | number | NodeJS.Timeout | undefined;
+
+        if (searchQuery.length < 2) {
+            setFollowers(followersState);
+            setFollowings(followingsState);
+        } else {
+            intervalId = setTimeout(search, 1500);
+        }
+
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, [searchQuery]);
     // #endregion
 
     // posts
@@ -270,9 +381,9 @@ const Profile = () => {
                 payload: posts.filter((item) => item._id !== postId),
             });
             setPostCount((prevValue) => {
-                if (prevValue) return prevValue - 1;
+                return prevValue > 0 ? prevValue - 1 : 0;
             });
-            showToast({ type: "SUCCESS", message: "Comment deleted" });
+            showToast({ type: "SUCCESS", message: "Post deleted" });
         } catch (error) {
             showToast({ type: "ERROR", message: error as string });
         }
@@ -296,53 +407,69 @@ const Profile = () => {
         return <div>{errorProfile.message}</div>;
     }
 
-    if (loadingProfile) {
-        return <Loading />;
-    }
-
     return (
-        <div>
+        // {pt-14 md:pt-0} <- for top nav bar in mobile screen
+        <div className=" pt-14 md:pt-0 p-4 h-screen overflow-y-auto overflow-x-auto relative">
             {/* profile data */}
             {userData && (
                 <div
-                    className={`flex flex-col gap-0 ${
-                        showBottomList !== "" ? "blur-sm" : ""
-                    } transition delay-100 duration-300 border-b border-neutral-900`}
+                    className={`flex flex-col gap-0 transition delay-100 duration-300 border-b border-whiteAlpha2`}
                 >
                     <div className="flex items-center justify-between">
-                        <img
-                            src={
-                                userData.profilePictureUrl === ""
-                                    ? defaultProfilePicture
-                                    : userData?.profilePictureUrl
-                            }
-                            className="w-[150px] h-[150px] object-cover rounded-full"
-                        />
+                        <div className="relative">
+                            <img
+                                src={
+                                    userData.profilePictureUrl === ""
+                                        ? defaultProfilePicture
+                                        : userData?.profilePictureUrl
+                                }
+                                className="w-[150px] h-[150px] object-cover rounded-full border border-whiteAlpha1"
+                            />
+                            {userData.userId.toString() === currUserId && (
+                                <Link
+                                    className="absolute bottom-[15%] translate-y-[50%] right-[15%] translate-x-[50%] p-1.5 rounded-full bg-blue-500 border border-blue-300"
+                                    to={"/edit-profile"}
+                                    title="Edit Profile"
+                                >
+                                    <MdEdit className="size-6" />
+                                </Link>
+                            )}
+                        </div>
 
-                        {userData.userId === currUserId ? (
-                            <Link
-                                className="px-3 py-1 rounded-full bg-gradient-to-r from-neutral-900 to-neutral-600 from-[25%]"
-                                to={"/edit-profile"}
-                            >
-                                Edit Profile
-                            </Link>
-                        ) : (
-                            <button
-                                onClick={handleFollowBtn}
-                                disabled={fetchingDoIFollow}
-                                className={`px-3 py-1 rounded-full ${
-                                    doIFollowData?.doIFollow
-                                        ? "bg-neutral-800 text-neutral-100"
-                                        : "bg-neutral-500 text-neutral-100"
-                                } font-bold`}
-                            >
-                                {doIFollowData?.doIFollow
-                                    ? "Unfollow"
-                                    : "Follow"}
-                            </button>
+                        {userData.userId.toString() !== currUserId && (
+                            <div className="flex flex-col gap-2 justify-center items-center">
+                                <button
+                                    onClick={handleFollowBtn}
+                                    disabled={fetchingDoIFollow}
+                                    className={`px-3 py-1 rounded-full ${
+                                        doIFollowData?.doIFollow
+                                            ? "bg-black2"
+                                            : "bg-blue-500"
+                                    } font-poppins-bold hover:bg-blue-400 hover:px-4 transition-all duration-300 delay-75`}
+                                >
+                                    <span className="flex justify-center items-center gap-1">
+                                        {fetchingDoIFollow && (
+                                            <LoadingCircleSvg className="size-5" />
+                                        )}
+                                        {doIFollowData?.doIFollow
+                                            ? "Unfollow"
+                                            : "Follow"}
+                                    </span>
+                                </button>
+
+                                <Link
+                                    className="px-3 py-1 rounded-full bg-black2 font-poppins-bold hover:bg-blue-400 hover:px-4 transition-all duration-300 delay-75"
+                                    to={"/"}
+                                    title="Message"
+                                >
+                                    Message
+                                </Link>
+                            </div>
                         )}
                     </div>
-                    <h2 className="text-xl font-bold">{userData.name}</h2>
+                    <h2 className="text-xl font-poppins-bold">
+                        {userData.name}
+                    </h2>
                     <h4 className="text-md font-semibold text-neutral-400">
                         {userData.username}
                     </h4>
@@ -392,9 +519,9 @@ const Profile = () => {
                             </span>
                         )}
                     </div>
-                    <div className="flex items-center py-3 text-neutral-400 justify-between md:justify-start md:gap-4">
+                    <div className="flex items-center py-3 text-neutral-400 justify-start gap-4">
                         <span className="flex gap-1">
-                            <b className="text-white">{postCount}</b>   
+                            <b className="text-white">{postCount}</b>
                             Posts
                         </span>
                         <span
@@ -419,90 +546,163 @@ const Profile = () => {
                 </div>
             )}
 
-            {/* bottom card for followers and followings */}
-            <div
-                className={`fixed container mx-auto px-4 bottom-0 ${
-                    showBottomList !== "" ? "h-[65%] py-3" : "h-[0px]"
-                } w-[calc(100%-10%)] rounded-t-xl bg-neutral-700 transition-all delay-100 duration-300`}
-            >
-                <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-bold">
-                        {showBottomList === "FOLLOWERS" && "Followers"}
-                        {showBottomList === "FOLLOWINGS" && "Followings"}
-                    </h2>
-                    <span
-                        className="cursor-pointer"
-                        onClick={() => {
-                            setShowBottomList("");
-                        }}
-                    >
-                        <AiOutlineClose />
-                    </span>
-                </div>
-                {showBottomList === "FOLLOWERS" && (
-                    <div className="overflow-auto flex flex-col gap-2 py-4 h-full">
-                        {(!followers || followers.length === 0) && (
-                            <div>No Followers</div>
-                        )}
-                        {followers?.map((data, i) => {
-                            if (followers.length === i + 1) {
-                                return (
-                                    <div
-                                        ref={lastSearchResultCardFollowersRef}
-                                        key={i}
-                                        className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]"
-                                    >
-                                        <SearchResultCard searchResult={data} />
-                                    </div>
-                                );
-                            }
-                            return (
-                                <div
-                                    key={i}
-                                    className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]"
-                                >
-                                    <SearchResultCard searchResult={data} />
-                                </div>
-                            );
-                        })}
-                        {loadingFollowers && <Loading />}
-                    </div>
-                )}
+            {!userData && loadingProfile && <ProfileLoading />}
 
-                {showBottomList === "FOLLOWINGS" && (
-                    <div className="overflow-auto flex flex-col gap-2 py-4 h-full">
-                        {(!followings || followings.length === 0) && (
-                            <div>No Followings</div>
-                        )}
-                        {followings?.map((data, i) => {
-                            if (followings.length === i + 1) {
-                                return (
-                                    <div
-                                        ref={lastSearchResultCardFollowingsRef}
-                                        key={i}
-                                        className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]"
+            {/* bottom card for followers and followings */}
+            {showBottomList !== "" && (
+                <FadeBG
+                    onClick={() => {
+                        setShowBottomList("");
+                        setSearchQuery("");
+                    }}
+                />
+            )}
+            <div
+                className={`fixed h-0 sm:ms-6 md:ms-48 lg:ms-40 z-[20] bottom-0 left-0 right-0 flex items-end justify-center`}
+            >
+                <div
+                    ref={bottomListDivRef}
+                    className={`relative w-[350px] md:w-[500px] lg:w-[700px] bottom-0 left-0 grid-rows-[100px_1fr] grid grid-flow-row transition-all ease-in-out delay-75 duration-300 rounded-t-lg bg-black2`}
+                >
+                    {showBottomList && (
+                        <>
+                            {/* header */}
+                            <div>
+                                <div className="flex justify-between items-center ">
+                                    <h2 className="text-xl font-poppins-bold">
+                                        {showBottomList === "FOLLOWERS" &&
+                                            "Followers"}
+                                        {showBottomList === "FOLLOWINGS" &&
+                                            "Followings"}
+                                    </h2>
+                                    <button
+                                        className="focus:outline-none p-2"
+                                        onClick={() => {
+                                            setShowBottomList("");
+                                            setSearchQuery("");
+                                        }}
                                     >
-                                        <SearchResultCard searchResult={data} />
-                                    </div>
-                                );
-                            }
-                            return (
-                                <div
-                                    key={i}
-                                    className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]"
-                                >
-                                    <SearchResultCard searchResult={data} />
+                                        <AiOutlineClose className="size-6" />
+                                    </button>
                                 </div>
-                            );
-                        })}
-                        {loadingFollowings && <Loading />}
-                    </div>
-                )}
+                                <div className="flex justify-between bg-black2 mx-3 w-[calc(100%-24px)] px-4 py-2 rounded-full">
+                                    <input
+                                        type="text"
+                                        autoComplete="off"
+                                        placeholder="Search"
+                                        className="focus:outline-none bg-transparent placeholder:text-whiteAlpha1 w-full"
+                                        onChange={(e) =>
+                                            setSearchQuery(e.target.value)
+                                        }
+                                        value={searchQuery}
+                                    />
+                                    {searchQuery.length !== 0 && (
+                                        <button
+                                            className="focus:outline-none"
+                                            onClick={() => setSearchQuery("")}
+                                        >
+                                            <AiOutlineClose className="size-6 text-white3" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* body */}
+                            <div className="overflow-y-auto overflow-x-hidden flex flex-col gap-2 px-3">
+                                {showBottomList === "FOLLOWERS" && (
+                                    <>
+                                        {(!followers ||
+                                            followers.length === 0) && (
+                                            <div>No Followers</div>
+                                        )}
+                                        {followers?.map((data, i) => {
+                                            if (
+                                                followers.length === i + 1 &&
+                                                searchQuery.length < 2
+                                            ) {
+                                                return (
+                                                    <div
+                                                        ref={
+                                                            lastSearchResultCardFollowersRef
+                                                        }
+                                                        key={i}
+                                                        className="w-full"
+                                                    >
+                                                        <SearchResultCard
+                                                            searchResult={data}
+                                                        />
+                                                    </div>
+                                                );
+                                            }
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    className="w-full border-b border-whiteAlpha2 pb-2"
+                                                >
+                                                    <SearchResultCard
+                                                        searchResult={data}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
+                                        {(loadingFollowers ||
+                                            searchingFollowers) && (
+                                            <LoadingFollowSkeleton />
+                                        )}
+                                    </>
+                                )}
+
+                                {showBottomList === "FOLLOWINGS" && (
+                                    <>
+                                        {(!followings ||
+                                            followings.length === 0) && (
+                                            <div>No Followings</div>
+                                        )}
+                                        {followings?.map((data, i) => {
+                                            if (
+                                                followings.length === i + 1 &&
+                                                searchQuery.length < 2
+                                            ) {
+                                                return (
+                                                    <div
+                                                        ref={
+                                                            lastSearchResultCardFollowingsRef
+                                                        }
+                                                        key={i}
+                                                        className="w-full"
+                                                    >
+                                                        <SearchResultCard
+                                                            searchResult={data}
+                                                        />
+                                                    </div>
+                                                );
+                                            }
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    className="w-full border-b border-whiteAlpha2 pb-2"
+                                                >
+                                                    <SearchResultCard
+                                                        searchResult={data}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
+                                        {(loadingFollowings ||
+                                            searchingFollowings) && (
+                                            <LoadingFollowSkeleton />
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* posts */}
-            <div className="overflow-auto flex flex-col h-full">
-                {(!posts || posts.length === 0) && (
+            <div className="flex flex-col">
+                {!loadingPosts && (!posts || posts.length === 0) && (
                     <div className="flex flex-col justify-center items-center h-[300px]">
                         <span className="text-3xl p-2 rounded-full bg-neutral-800">
                             <BiImage />
@@ -510,6 +710,7 @@ const Profile = () => {
                         <h3 className="text-2xl font-semibold">No Posts</h3>
                     </div>
                 )}
+
                 {posts?.map((data, i) => {
                     if (posts.length === i + 1) {
                         return (
@@ -528,7 +729,7 @@ const Profile = () => {
                     return (
                         <div
                             key={i}
-                            className="border-b py-4 border-neutral-900"
+                            className="py-4 border-b border-whiteAlpha2"
                         >
                             <PostCard
                                 handleDeleteBtn={handlePostDeleteBtn}
@@ -537,17 +738,36 @@ const Profile = () => {
                         </div>
                     );
                 })}
-            </div>
 
-            {isLoggedIn && (
-                <div className="fixed p-1 rounded-full bg-cyan-800 bottom-5 right-5">
-                    <Link to={"/add-post"} className="text-5xl">
-                        <BiPlus />
-                    </Link>
-                </div>
-            )}
+                {loadingPosts && (
+                    <>
+                        <div className="py-4 border-b border-whiteAlpha2">
+                            <PostCardLoading />
+                        </div>
+                        <div className="py-4">
+                            <PostCardLoading />
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 };
 
 export default Profile;
+
+const LoadingFollowSkeleton = () => {
+    return (
+        <>
+            <div className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
+                <SearchResultCardLoading />
+            </div>
+            <div className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
+                <SearchResultCardLoading />
+            </div>
+            <div className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
+                <SearchResultCardLoading />
+            </div>
+        </>
+    );
+};

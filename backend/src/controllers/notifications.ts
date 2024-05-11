@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import Notification from "../models/notifications";
-import UserData from "../models/userData";
-import { NotificationsDataType } from "../types/types";
-import UserAuth from "../models/userAuth";
+import mongoose from "mongoose";
+import Chat from "../models/chat";
 
 export const getNotifications = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit ? req.query.limit.toString() : "5");
@@ -11,10 +10,47 @@ export const getNotifications = async (req: Request, res: Response) => {
     try {
         const notifications = await Notification.aggregate([
             {
-                $match: { userId: req.userId },
+                $match: { userId: new mongoose.Types.ObjectId(req.userId) },
             },
             {
-                $sort: { at: -1 }, // Sort by postedAt
+                $lookup: {
+                    from: "UserAuth",
+                    localField: "notificationFormUserId",
+                    foreignField: "_id",
+                    as: "userAuthData",
+                },
+            },
+            {
+                $lookup: {
+                    from: "UserData",
+                    localField: "notificationFormUserId",
+                    foreignField: "userId",
+                    as: "userData",
+                },
+            },
+            { $unwind: "$userAuthData" },
+            { $unwind: "$userData" },
+            {
+                $addFields: {
+                    notificationFrom: {
+                        userId: "$userAuthData._id",
+                        username: "$userAuthData.username",
+                        profilePictureUrl: "$userData.profilePictureUrl",
+                    },
+                },
+            },
+            {
+                $project: {
+                    notificationFor: 1,
+                    notificationFrom: 1,
+                    postId: 1,
+                    commentId: 1,
+                    at: "$created_at",
+                    readStatus: 1,
+                },
+            },
+            {
+                $sort: { at: -1 }, // Sort by time
             },
             {
                 $skip: skip,
@@ -24,48 +60,7 @@ export const getNotifications = async (req: Request, res: Response) => {
             },
         ]);
 
-        const userIds = [];
-        for (let index = 0; index < notifications.length; index++) {
-            const element = notifications[index];
-            userIds.push(element.notificationForm);
-        }
-
-        const userDatas = await UserData.find(
-            { userId: { $in: userIds } },
-            { profilePictureUrl: 1, userId: 1 }
-        );
-
-        const userAuths = await UserAuth.find(
-            { _id: { $in: userIds } },
-            { username: 1 }
-        );
-
-        const response: NotificationsDataType[] = [];
-
-        for (let index = 0; index < notifications.length; index++) {
-            const element = notifications[index];
-            const userData = userDatas.filter(
-                (data) => data.userId === element.notificationForm
-            )[0];
-            const userAuth = userAuths.filter(
-                (data) => data.id == element.notificationForm
-            )[0];
-
-            response.push({
-                notificationFor: element.notificationFor,
-                notificationForm: {
-                    userId: userData.userId,
-                    username: userAuth.username,
-                    profilePictureUrl: userData.profilePictureUrl,
-                },
-                postId: element.postId,
-                commentId: element.commentId,
-                at: element.at,
-                readStatus: element.readStatus,
-            });
-        }
-
-        res.status(200).json(response);
+        res.status(200).json(notifications);
 
         // change readStatus of the notifications which are already fetched.
         await Notification.updateMany(
@@ -90,28 +85,98 @@ export const doIHaveNotifications = async (req: Request, res: Response) => {
     try {
         const notifications = await Notification.aggregate([
             {
-                $match: { userId: req.userId },
+                $match: { userId: new mongoose.Types.ObjectId(req.userId) },
             },
             {
-                $sort: { at: -1 }, // Sort by postedAt
+                $project: {
+                    readStatus: 1,
+                },
+            },
+            {
+                $sort: { at: -1 },
             },
             {
                 $limit: 1,
             },
         ]);
 
+        const chats = await Chat.aggregate([
+            {
+                $match: {
+                    membersUserId: {
+                        $in: [new mongoose.Types.ObjectId(req.userId)],
+                    },
+                },
+            },
+            {
+                $lookup: {
+                    from: "Message",
+                    let: { chatId: { $toObjectId: "$_id" } },
+                    pipeline: [
+                        {
+                            $match: { $expr: { $eq: ["$chatId", "$$chatId"] } },
+                        },
+                        {
+                            $sort: {
+                                created_at: -1,
+                            },
+                        },
+                        { $limit: 1 },
+                        {
+                            $project: {
+                                readStatus: 1,
+                                sender: 1,
+                            },
+                        },
+                    ],
+                    as: "message",
+                },
+            },
+            {
+                $addFields: {
+                    newMessage: {
+                        $cond: [
+                            {
+                                $eq: [
+                                    { $arrayElemAt: ["$message.sender", 0] },
+                                    new mongoose.Types.ObjectId(req.userId),
+                                ],
+                            },
+                            false,
+                            {
+                                $cond: [
+                                    {
+                                        $arrayElemAt: [
+                                            "$message.readStatus",
+                                            0,
+                                        ],
+                                    },
+                                    false,
+                                    true,
+                                ],
+                            },
+                        ],
+                    },
+                },
+            },
+            {
+                $project: {
+                    newMessage: 1,
+                },
+            },
+            { $sort: { lastMessageOn: -1 } },
+            { $limit: 1 },
+        ]);
+
         const response = {
-            doIHaveNotifications: false,
+            doIHaveNotifications:
+                notifications.length > 0 ? !notifications[0].readStatus : false,
+            doIHaveNewMessage: chats.length > 0 ? chats[0].newMessage : false,
         };
 
-        if (notifications.length > 0 && !notifications[0].readStatus) {
-            response.doIHaveNotifications = true;
-        }
-
-        res.status(200).json({response});
+        res.status(200).json({ response });
     } catch (error) {
-        console.log(error);
-        
+        console.log("error while do i have notifications", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

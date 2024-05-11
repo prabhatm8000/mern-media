@@ -1,24 +1,18 @@
 import { Dispatch, createContext, useContext, useReducer } from "react";
-import { UserDataBasicType } from "../../../backend/src/types/types";
-
-type StateType = UserDataBasicType[];
-
-type ActionType =
-    | {
-          type: "SET_SEARCHRESULT";
-          payload: UserDataBasicType[];
-      }
-    | { type: "RESET" };
+import { SearchActionType, SearchStateType } from "../types/contextTypes";
 
 export const SearchResultContext = createContext<{
-    state: StateType;
-    dispatch: Dispatch<ActionType>;
+    state: SearchStateType;
+    dispatch: Dispatch<SearchActionType>;
 }>({
     state: [],
     dispatch: () => {},
 });
 
-export const searchResultReducer = (state: StateType, action: ActionType) => {
+export const searchResultReducer = (
+    state: SearchStateType,
+    action: SearchActionType
+) => {
     switch (action.type) {
         case "SET_SEARCHRESULT":
             return action.payload;
@@ -38,7 +32,10 @@ export const SearchResultContextProvider = ({
 }: {
     children: React.ReactNode;
 }) => {
-    const [state, dispatch] = useReducer(searchResultReducer, [] as StateType);
+    const [state, dispatch] = useReducer(
+        searchResultReducer,
+        [] as SearchStateType
+    );
 
     return (
         <SearchResultContext.Provider value={{ state, dispatch }}>

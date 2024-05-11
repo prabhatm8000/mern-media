@@ -3,8 +3,8 @@ import Loading from "./Loading";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import * as apiClient from "../apiClient";
-import { NotificationsDataType } from "../../../backend/src/types/types";
 import NotificationCard from "./NotificationCard";
+import { NotificationsDataType } from "../../../backend/src/types/types";
 
 interface NotificationBoxProps {
     handleCloseBtn: () => void;
@@ -61,13 +61,13 @@ const NotificationBox = ({ handleCloseBtn }: NotificationBoxProps) => {
     const handleClearNotificationsBtn = () => {
         apiClient.clearNotifications();
         setNotifications([]);
-    }
+    };
 
     return (
         <>
             {/* header */}
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Notifications</h2>
+                <h2 className="text-xl font-poppins-bold">Notifications</h2>
                 <span className="cursor-pointer" onClick={handleCloseBtn}>
                     <AiOutlineClose />
                 </span>
@@ -95,7 +95,7 @@ const NotificationBox = ({ handleCloseBtn }: NotificationBoxProps) => {
                             <div
                                 onClick={handleCloseBtn}
                                 key={i}
-                                className="pb-2 border-b border-b-stone-600"
+                                className="pb-2 border-b border-b-whiteAlpha2"
                             >
                                 <NotificationCard data={data} />
                             </div>
@@ -106,7 +106,10 @@ const NotificationBox = ({ handleCloseBtn }: NotificationBoxProps) => {
             )}
 
             {/* clear all notification */}
-            <button onClick={handleClearNotificationsBtn} className="mt-2 mb-0 p-1 rounded-md transition ease-in-out delay-100 font-semibold text-xl bg-red-500 hover:bg-red-700 duration-300">
+            <button
+                onClick={handleClearNotificationsBtn}
+                className="mt-2 mb-0 p-1 rounded-md transition ease-in-out delay-100 font-semibold text-xl bg-red-500 hover:bg-red-700 duration-300"
+            >
                 Clear
             </button>
         </>

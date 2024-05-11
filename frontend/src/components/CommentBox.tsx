@@ -2,17 +2,18 @@ import { AiOutlineClose } from "react-icons/ai";
 import { BiSolidSend } from "react-icons/bi";
 import { useMutation } from "react-query";
 
-import * as apiClient from "../apiClient";
-import { useForm } from "react-hook-form";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import * as apiClient from "../apiClient";
 import { useAppContext } from "../contexts/AppContext";
 import CommentCard from "./CommentCard";
-import Loading from "./Loading";
-import { useCommentsContext } from "../contexts/CommentContext";
+import LoadingCircleSvg from "./LoadingCircleSvg";
+import CommentCardLoading from "./skeletonLoadings/CommentCardLoading";
+import { PostCommentUserDataType } from "../../../backend/src/types/types";
 
 interface CommentBoxProps {
     postId: string;
-    handleCloseBtn: () => void;
+    onClose: () => void;
     setCommentCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -24,14 +25,10 @@ export type PostCommentFormType = {
 const MAX_LENGTH_OF_COMMENT = 500;
 const COMMMENT_LIMIT = 5;
 
-const CommentBox = ({
-    postId,
-    handleCloseBtn,
-    setCommentCount,
-}: CommentBoxProps) => {
+const CommentBox = ({ postId, onClose, setCommentCount }: CommentBoxProps) => {
     const { showToast } = useAppContext();
-    const { state: comments, dispatch: dispatchComments } =
-        useCommentsContext();
+    2;
+    const [comments, setComments] = useState<PostCommentUserDataType[]>([]);
 
     // adding comment
     // #region
@@ -44,7 +41,7 @@ const CommentBox = ({
 
     const { mutate, isLoading } = useMutation(apiClient.addComment, {
         onSuccess: () => {
-            showToast({ message: "Posted", type: "SUCCESS" });
+            showToast({ message: "Comment posted!", type: "SUCCESS" });
             setCommentCount((prev) => prev + 1);
             handleCloseBtn();
         },
@@ -101,33 +98,26 @@ const CommentBox = ({
     );
 
     useEffect(() => {
-        if (commentPage > 1) {
-            setLoadingComments(true);
-            fetchComments().then((result) => {
-                setLoadingComments(false);
-                if (result && result?.length > 0) {
-                    dispatchComments({
-                        type: "ADD_COMMENTS",
-                        payload: result,
-                    });
-                    if (result.length < COMMMENT_LIMIT)
-                        setHasMoreComments(false);
-                } else setHasMoreComments(false);
-            });
-        }
-    }, [commentPage]);
+        setLoadingComments(true);
+        fetchComments().then((result) => {
+            setLoadingComments(false);
+            if (result && result?.length > 0) {
+                setComments((prev) => [...prev, ...result]);
+                if (result.length < COMMMENT_LIMIT) setHasMoreComments(false);
+            } else setHasMoreComments(false);
+        });
+    }, [commentPage, fetchMyComments]);
     // #endregion
 
     // delete comment
     const handleDeleteBtn = async (commentId: string) => {
         try {
             await apiClient.deleteComment(commentId);
-            dispatchComments({
-                type: "SET_COMMENTS",
-                payload: comments.filter((item) => item._id !== commentId),
-            });
+            setComments((prev) =>
+                prev.filter((item) => item._id.toString() !== commentId)
+            );
             setCommentCount((prev) => prev - 1);
-            showToast({ type: "SUCCESS", message: "Comment deleted" });
+            showToast({ type: "SUCCESS", message: "Comment deleted!" });
         } catch (error) {
             showToast({ type: "ERROR", message: error as string });
         }
@@ -138,25 +128,18 @@ const CommentBox = ({
         setfetchMyComments((prev) => !prev);
     };
 
-    // reset comments when postId changes
+    // reset comments
     useEffect(() => {
-        dispatchComments({ type: "RESET" });
-        setHasMoreComments(true);
+        setComments([]);
         setCommentPage(1);
+        setHasMoreComments(true);
+    }, [fetchMyComments, postId]);
 
-        // init fetch
-        setLoadingComments(true);
-        fetchComments(1).then((result) => {
-            setLoadingComments(false);
-            if (result && result?.length > 0) {
-                dispatchComments({
-                    type: "SET_COMMENTS",
-                    payload: result,
-                });
-                if (result.length < COMMMENT_LIMIT) setHasMoreComments(false);
-            } else setHasMoreComments(false);
-        });
-    }, [postId, fetchMyComments]);
+    function handleCloseBtn() {
+        onClose();
+        // setCommentPage(1);
+        // setComments([]);
+    }
 
     // length check-
     // #region
@@ -174,8 +157,10 @@ const CommentBox = ({
     return (
         <>
             {/* header */}
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Comments</h2>
+            <div className="flex justify-between items-center mx-2">
+                <h2 className="text-xl font-poppins-bold">
+                    {fetchMyComments ? "Your comments" : "Comments"}
+                </h2>
                 <span className="cursor-pointer" onClick={handleCloseBtn}>
                     <AiOutlineClose />
                 </span>
@@ -183,17 +168,17 @@ const CommentBox = ({
 
             {/* comments */}
             {comments && (
-                <div className="overflow-auto flex flex-col gap-2 py-4">
+                <div className="overflow-auto px-3 flex flex-col divide-y-[1px] divide-whiteAlpha2">
                     {comments.length === 0 && !loadingComments && (
                         <div>No Comments</div>
                     )}
                     {comments.map((data, i) => {
-                        if (comments.length === i + 1) {
+                        if (i === comments.length - 1) {
                             return (
                                 <div
                                     ref={lastCommentRef}
                                     key={i}
-                                    className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]"
+                                    className="w-full"
                                 >
                                     <CommentCard
                                         handleDeleteBtn={handleDeleteBtn}
@@ -203,10 +188,7 @@ const CommentBox = ({
                             );
                         }
                         return (
-                            <div
-                                key={i}
-                                className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px] border-b border-b-stone-600"
-                            >
+                            <div key={i} className="w-full">
                                 <CommentCard
                                     handleDeleteBtn={handleDeleteBtn}
                                     comment={data}
@@ -214,7 +196,19 @@ const CommentBox = ({
                             </div>
                         );
                     })}
-                    {loadingComments && <Loading />}
+                    {loadingComments && (
+                        <>
+                            <div className="w-full">
+                                <CommentCardLoading />
+                            </div>
+                            <div className="w-full">
+                                <CommentCardLoading />
+                            </div>
+                            <div className="w-full">
+                                <CommentCardLoading />
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
 
@@ -223,12 +217,18 @@ const CommentBox = ({
                 className="flex items-end justify-center gap-2"
                 onSubmit={onSubmit}
             >
-                <label className="relative text-neutral-200 text-sm font-bold flex-1">
-                    Add Comment
+                <div className="relative flex-1">
+                    <button
+                        onClick={handleShowMyCommentsBtn}
+                        className="text-blue-400"
+                    >
+                        Your comments
+                    </button>
                     <textarea
+                        placeholder="Comment"
                         rows={3}
                         maxLength={MAX_LENGTH_OF_COMMENT}
-                        className="resize-none bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-1 px-2 font-normal focus:outline-none"
+                        className="resize-none bg-black1 border rounded border-whiteAlpha2 w-full py-1 px-2 focus:outline-none"
                         {...register("comment", {
                             required: "Comment field is empty!",
                         })}
@@ -242,39 +242,21 @@ const CommentBox = ({
                         <span id="current">{numOfLettersInComment}</span>
                         <span id="maximum">/{MAX_LENGTH_OF_COMMENT}</span>
                     </div>
-                </label>
+                </div>
 
                 {/* submit button */}
                 <span className="flex flex-col items-center justify-between mb-2">
-                    <button onClick={handleShowMyCommentsBtn}>
-                        My-comments
-                    </button>
                     <button
                         disabled={isLoading}
                         type="submit"
-                        className="flex items-center gap-1 p-3 bg-neutral-800 border border-neutral-600 text-white font-bold text-2xl rounded-full transition ease-in-out delay-150 hover:bg-amber-600 disabled:bg-amber-600 duration-300"
+                        className="p-2 bg-black1 border border-whiteAlpha2 rounded-full transition ease-in-out delay-100 hover:bg-blue-500 disabled:bg-blue-700 duration-300"
                     >
                         {isLoading ? (
-                            <svg
-                                className="animate-spin h-5 w-5"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    className="opacity-10"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                ></circle>
-                                <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                ></path>
-                            </svg>
+                            <span className="size-6">
+                                <LoadingCircleSvg />
+                            </span>
                         ) : (
-                            <BiSolidSend />
+                            <BiSolidSend className="size-6" />
                         )}
                     </button>
                 </span>

@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { UserDataType } from "../types/types";
 import UserData from "../models/userData";
-import { deleteImageByURL, uploadProfilePicture } from "../cloudinary";
-import UserAuth from "../models/userAuth";
+import { deleteImageByURL, uploadProfilePicture } from "../utils/cloudinary";
+import mongoose from "mongoose";
+import { UserDataType } from "../types/types";
 
 export const editUserData = async (req: Request, res: Response) => {
     try {
@@ -28,7 +28,10 @@ export const editUserData = async (req: Request, res: Response) => {
             (imageFile && userData.profilePictureUrl.length > 0) ||
             (!imageFile && newUserData.profilePictureUrl.length === 0)
         ) {
-            await deleteImageByURL(userData.profilePictureUrl, "PROFILE_PICTURE");
+            await deleteImageByURL(
+                userData.profilePictureUrl,
+                "PROFILE_PICTURE"
+            );
         }
 
         if (imageFile) {
@@ -45,43 +48,56 @@ export const editUserData = async (req: Request, res: Response) => {
 };
 
 export const getUserDataById = async (req: Request, res: Response) => {
-    let userId = req.params.userId as string;
-
     try {
-        // if userId is equal to me send the current userData
-        if (userId === "me") {
-            userId = req.userId;
-        }
+        let userId =
+            req.params.userId === "me" ? req.userId : req.params.userId;
 
-        const userData = await UserData.findOne({ userId: userId });
+        const userData = await UserData.aggregate([
+            {
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                },
+            },
+            {
+                $lookup: {
+                    from: "UserAuth",
+                    localField: "userId",
+                    foreignField: "_id",
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 0,
+                                username: 1,
+                            },
+                        },
+                    ],
+                    as: "userAuthData",
+                },
+            },
+            {$unwind: "$userAuthData"},
+            {
+                $project: {
+                    description: 1,
+                    followerCount: 1,
+                    followingCount: 1,
+                    joinedAt: "$created_at",
+                    link1: 1,
+                    link2: 1,
+                    link3: 1,
+                    name: 1,
+                    postCount: 1,
+                    profilePictureUrl: 1,
+                    userId: 1,
+                    username: "$userAuthData.username",
+                },
+            },
+        ]);
 
-        if (!userData) {
+        if (userData.length <= 0) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const user = await UserAuth.findById(userData.userId);
-
-        const response: UserDataType = {
-            _id: userData._id,
-            description: userData.description,
-            followerCount: userData.followerCount,
-            followingCount: userData.followingCount,
-            joinedAt: userData.joinedAt,
-            link1: userData.link1,
-            link2: userData.link2,
-            link3: userData.link3,
-            name: userData.name,
-            postCount: userData.postCount,
-            profilePictureUrl: userData.profilePictureUrl,
-            userId: userData.userId,
-            username: userData.username,
-        };
-
-        if (user) {
-            response.username = user?.username;
-        }
-
-        res.status(200).json(response);
+        res.status(200).json(userData[0]);
     } catch (error) {
         console.log("error while get userData by id", error);
         res.status(500).json({ message: "Something went wrong" });

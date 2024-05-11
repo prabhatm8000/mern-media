@@ -28,7 +28,7 @@ const upload = multer({
 post.delete("/:postId", deletePost);
 
 post.post(
-    "/add-post",
+    "/add",
     upload.array("imageFiles", MAX_LENGTH_OF_IMAGES), // accepts MAX_LENGTH_OF_IMAGES images of 5MB
     addPost
 );

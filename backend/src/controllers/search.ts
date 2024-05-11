@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import UserData from "../models/userData";
 import UserAuth from "../models/userAuth";
-import { UserDataBasicType, UserDataType } from "../types/types";
 
 export const searchAutoComplete = async (req: Request, res: Response) => {
     try {
@@ -9,7 +7,10 @@ export const searchAutoComplete = async (req: Request, res: Response) => {
 
         const users = await UserAuth.find(
             {
-                username: new RegExp(query, "i"),
+                username: {
+                    $regex: `.*${query}.*`,
+                    $options: "i",
+                },
             },
             { username: 1, _id: 0 }
         ).limit(7);
@@ -29,42 +30,39 @@ export const searchUser = async (req: Request, res: Response) => {
     try {
         const query = req.query.query as string;
 
-        const userIds = await UserAuth.find(
-            { username: new RegExp(query, "i") },
-            { _id: 1, username: 1 }
-        )
-            .skip(skip)
-            .limit(limit);
-
-        const userDatas = await UserData.find(
+        const result = await UserAuth.aggregate([
             {
-                userId: { $in: userIds.map((item) => item._id) },
+                $match: {
+                    username: {
+                        $regex: `.*${query}.*`,
+                        $options: "i",
+                    },
+                },
             },
-            { name: 1, profilePictureUrl: 1, userId: 1 }
-        );
+            {
+                $lookup: {
+                    from: "UserData",
+                    localField: "_id",
+                    foreignField: "userId",
+                    as: "userData",
+                },
+            },
+            { $unwind: "$userData" },
+            {
+                $project: {
+                    username: 1,
+                    name: "$userData.name",
+                    profilePictureUrl: "$userData.profilePictureUrl",
+                    userId: "$userData.userId",
+                },
+            },
+            { $skip: skip },
+            { $limit: limit },
+        ]);
 
-        const response: UserDataBasicType[] = userDatas.map((userData, i) => {
-            let username: string = "";
-
-            for (let index = 0; index < userIds.length; index++) {
-                if (userIds[index]._id.toString() === userData.userId) {
-                    username = userIds[index].username;
-                    break;
-                }
-            }
-
-            return {
-                _id: userData._id,
-                name: userData.name,
-                profilePictureUrl: userData.profilePictureUrl,
-                userId: userData.userId,
-                username,
-            };
-        });
-
-        res.status(200).json(response);
+        res.status(200).json(result);
     } catch (error) {
-        console.log("error while search autocomplete ", error);
+        console.log("error while search ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

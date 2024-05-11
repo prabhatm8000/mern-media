@@ -1,7 +1,5 @@
 import { useState } from "react";
 import Cropper, { Area } from "react-easy-crop";
-import { FaXmark } from "react-icons/fa6";
-import { TiTick } from "react-icons/ti";
 
 interface ImageCropperProps {
     image: string;
@@ -53,23 +51,23 @@ const ImageCropper = ({
                 />
             </div>
 
-            <div className="fixed bottom-20 left-[50%] translate-x-[-50%] flex gap-5">
+            <div className="fixed bottom-14 left-[50%] translate-x-[-50%] flex gap-5">
                 <button
-                    className="bg-green-700 p-1 rounded-full text-3xl"
+                    className="bg-blue-600 rounded-full border border-blue-500 p-1 text-lg w-[100px]"
                     onClick={() => {
                         if (croppedArea) onCropDone(croppedArea);
                         onCropCancel();
                     }}
                 >
-                    <TiTick />
+                    Crop
                 </button>
                 <button
-                    className="bg-red-700 p-1 rounded-full text-3xl"
+                    className="bg-whiteAlpha2 rounded-full border border-whiteAlpha1 p-1 text-lg w-[100px]"
                     onClick={() => {
                         onCropCancel();
                     }}
                 >
-                    <FaXmark />
+                    Cancel
                 </button>
             </div>
         </div>

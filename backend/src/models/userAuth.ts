@@ -1,7 +1,6 @@
-import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 
-import { UserAuthType } from "../types/types";
 
 const userAuthSchema = new mongoose.Schema({
     username: {
@@ -13,7 +12,9 @@ const userAuthSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-});
+}, {collection: "UserAuth"});
+
+userAuthSchema.index({ username: 'text' });
 
 // mongodb middleware for save
 // password hashing
@@ -24,6 +25,6 @@ userAuthSchema.pre("save", async function (next) {
     next();
 });
 
-const UserAuth = mongoose.model<UserAuthType>("UserAuth", userAuthSchema);
+const UserAuth = mongoose.model("UserAuth", userAuthSchema);
 
 export default UserAuth;

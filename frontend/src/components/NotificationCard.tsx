@@ -1,9 +1,9 @@
 import { formatDistanceToNow } from "date-fns";
-import { NotificationsDataType } from "../../../backend/src/types/types";
 
 // image
 import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 import { Link } from "react-router-dom";
+import { NotificationsDataType } from "../../../backend/src/types/types";
 
 interface NotificationCardProps {
     data: NotificationsDataType;
@@ -15,26 +15,26 @@ const NotificationCard = ({ data }: NotificationCardProps) => {
             to={
                 data.postId
                     ? `/post/${data.postId}`
-                    : `/profile/${data.notificationForm.userId}`
+                    : `/profile/${data.notificationFrom.userId}`
             }
-            className={`flex gap-2 p-2 rounded-md bg-neutral-800 ${data.readStatus ? "opacity-70" : ""}`}
+            className={`flex gap-2 p-2 rounded-md bg-black2 ${data.readStatus ? "opacity-50" : ""}`}
         >
             <img
                 className={`${data.readStatus ? "" : ""} p-[2.5px] rounded-full w-[40px] h-[40px] hover:scale-125 transition ease-in-out delay-100 duration-300`}
                 src={
-                    data.notificationForm.profilePictureUrl === ""
+                    data.notificationFrom.profilePictureUrl === ""
                         ? defaultProfilePicture
-                        : data.notificationForm.profilePictureUrl
+                        : data.notificationFrom.profilePictureUrl
                 }
-                alt={data.notificationForm.username}
-                title={data.notificationForm.username}
+                alt={data.notificationFrom.username}
+                title={data.notificationFrom.username}
             />
             <div className="flex flex-col gap-0">
-                <span className="text-sm text-neutral-200">
+                <span className="text-sm">
                     {formatDistanceToNow(new Date(data.at))} ago
                 </span>
                 <span>
-                    <b>{data.notificationForm.username} </b>
+                    <b>{data.notificationFrom.username} </b>
                     {data.notificationFor}
                 </span>
             </div>

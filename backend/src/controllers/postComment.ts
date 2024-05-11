@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { PostCommentType, PostCommentUserDataType } from "../types/types";
+
 import PostComment from "../models/postComment";
 import Post from "../models/post";
-import UserData from "../models/userData";
-import UserAuth from "../models/userAuth";
 import Notification from "../models/notifications";
+import mongoose from "mongoose";
+import { PostCommentType } from "../types/types";
 
 export const addComment = async (req: Request, res: Response) => {
     const commentData: PostCommentType = req.body;
@@ -14,7 +14,6 @@ export const addComment = async (req: Request, res: Response) => {
             postId: commentData.postId,
             userId: req.userId,
             comment: commentData.comment,
-            commentedOn: new Date(),
         });
         await user.save();
 
@@ -22,11 +21,10 @@ export const addComment = async (req: Request, res: Response) => {
         const post = await Post.findById(commentData.postId);
         await Notification.create({
             userId: post?.userId,
-            notificationForm: req.userId,
+            notificationFormUserId: req.userId,
             notificationFor: `commented '${commentData.comment}' on your post.`,
             postId: commentData.postId,
             commentId: user.id,
-            at: new Date(),
             readStatus: false,
         });
 
@@ -51,10 +49,39 @@ export const getCommentByPostId = async (req: Request, res: Response) => {
     try {
         const postComments = await PostComment.aggregate([
             {
-                $match: { postId },
+                $match: { postId: new mongoose.Types.ObjectId(postId) },
             },
             {
-                $sort: { commentedOn: -1 }, // Sort by postedAt
+                $lookup: {
+                    from: "UserAuth",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userAuthData",
+                },
+            },
+            {
+                $lookup: {
+                    from: "UserData",
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userData",
+                },
+            },
+            { $unwind: "$userAuthData" },
+            { $unwind: "$userData" },
+            {
+                $project: {
+                    _id: 1,
+                    comment: 1,
+                    commentedAt: "$created_at",
+                    username: "$userAuthData.username",
+                    profilePictureUrl: "$userData.profilePictureUrl",
+                    userId: 1,
+                    postId: 1,
+                },
+            },
+            {
+                $sort: { commentedAt: -1 }, // Sort by postedAt
             },
             {
                 $skip: skip,
@@ -64,52 +91,7 @@ export const getCommentByPostId = async (req: Request, res: Response) => {
             },
         ]);
 
-        const userIds = postComments.map((item) => item.userId);
-
-        const userDatas = await UserData.find(
-            { userId: { $in: userIds } },
-            { profilePictureUrl: 1, userId: 1, _id: 0 }
-        );
-
-        const userAuths = await UserAuth.find(
-            { _id: { $in: userIds } },
-            { username: 1, _id: 1 }
-        );
-
-        const response: PostCommentUserDataType[] = [];
-        for (let index = 0; index < postComments.length; index++) {
-            const item = postComments[index];
-
-            let profilePictureUrl = "";
-            for (let j = 0; j < userDatas.length; j++) {
-                const userDataItem = userDatas[j];
-                if (userDataItem.userId === item.userId) {
-                    profilePictureUrl = userDataItem.profilePictureUrl;
-                    break;
-                }
-            }
-
-            let username = "";
-            for (let j = 0; j < userAuths.length; j++) {
-                const userAuthItem = userAuths[j];
-                if (userAuthItem._id.toString() === item.userId) {
-                    username = userAuthItem.username;
-                    break;
-                }
-            }
-
-            response.push({
-                _id: item._id,
-                comment: item.comment,
-                commentedOn: item.commentedOn,
-                username,
-                profilePictureUrl,
-                userId: item.userId,
-                postId: item.postId,
-            });
-        }
-
-        res.status(200).json(response);
+        res.status(200).json(postComments);
     } catch (error) {
         console.log("error while getting comments by postId", error);
         res.status(500).json({ message: "Soemthing went wrong" });
@@ -125,10 +107,42 @@ export const getMyComments = async (req: Request, res: Response) => {
     try {
         const postComments = await PostComment.aggregate([
             {
-                $match: { postId, userId: req.userId },
+                $match: {
+                    postId: new mongoose.Types.ObjectId(postId),
+                    userId: new mongoose.Types.ObjectId(req.userId),
+                },
             },
             {
-                $sort: { commentedOn: -1 }, // Sort by postedAt
+                $lookup: {
+                    from: "UserAuth",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userAuthData",
+                },
+            },
+            {
+                $lookup: {
+                    from: "UserData",
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userData",
+                },
+            },
+            { $unwind: "$userAuthData" },
+            { $unwind: "$userData" },
+            {
+                $project: {
+                    _id: 1,
+                    comment: 1,
+                    commentedAt: "$created_at",
+                    username: "$userAuthData.username",
+                    profilePictureUrl: "$userData.profilePictureUrl",
+                    userId: 1,
+                    postId: 1,
+                },
+            },
+            {
+                $sort: { commentedAt: -1 }, // Sort by postedAt
             },
             {
                 $skip: skip,
@@ -138,38 +152,7 @@ export const getMyComments = async (req: Request, res: Response) => {
             },
         ]);
 
-        const userData = await UserData.findOne(
-            { userId: req.userId },
-            { profilePictureUrl: 1, userId: 1, _id: 0 }
-        );
-
-        const userAuth = await UserAuth.findOne(
-            { _id: req.userId },
-            { username: 1, _id: 1 }
-        );
-
-        if (!postComments || !userAuth || !userData) {
-            return res
-                .status(404)
-                .json({ message: "Comments or user not found" });
-        }
-
-        const response: PostCommentUserDataType[] = [];
-        for (let index = 0; index < postComments.length; index++) {
-            const item = postComments[index];
-
-            response.push({
-                _id: item._id,
-                comment: item.comment,
-                commentedOn: item.commentedOn,
-                username: userAuth.username,
-                profilePictureUrl: userData.profilePictureUrl,
-                userId: item.userId,
-                postId: item.postId,
-            });
-        }
-
-        res.status(200).json(response);
+        res.status(200).json(postComments);
     } catch (error) {
         console.log("error while getting comments by postId", error);
         res.status(500).json({ message: "Soemthing went wrong" });

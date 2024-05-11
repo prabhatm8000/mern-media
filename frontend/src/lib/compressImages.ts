@@ -40,7 +40,7 @@ export const compressImages = async (fileList: FileList): Promise<FileList> => {
                                 const compressedFile = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() });
                                 resolve(compressedFile);
                             }
-                        }, 'image/jpeg', 0.7); // JPEG compression quality (0.7 is recommended for good quality and size reduction)
+                        }, 'image/jpeg', 0.7); 
                     };
                     img.src = event.target.result as string;
                 }

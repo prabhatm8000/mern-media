@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQuery } from "react-query";
 import { MdPersonOff } from "react-icons/md";
+import { useQuery } from "react-query";
 
 // types
 import { PostType } from "../../../backend/src/types/types";
@@ -10,7 +10,7 @@ import * as apiClient from "../apiClient";
 
 // componenyts
 import PostCard from "../components/PostCard";
-import Loading from "../components/Loading";
+import PostCardLoading from "../components/skeletonLoadings/PostCardLoading";
 
 const POSTS_LIMIT = 5;
 
@@ -66,44 +66,51 @@ const Home = () => {
 
     const handle = (str: string) => {
         return str;
-    }
+    };
     return (
-        <div>
-            {/* posts */}
-            <div className="overflow-auto flex flex-col h-full">
-                {(!posts || posts.length === 0) && !loadingPosts && (
-                    <div className="flex flex-col justify-center items-center h-[300px]">
-                        <span className="text-3xl p-2 rounded-full bg-neutral-800">
-                            <MdPersonOff />
-                        </span>
-                        <h3 className="text-2xl font-semibold">
-                            No Posts from your followings
-                        </h3>
-                    </div>
-                )}
-                {posts?.map((data, i) => {
-                    if (posts.length === i + 1) {
-                        return (
-                            <div
-                                ref={lastSearchResultCardPostsRef}
-                                key={i}
-                                className="py-4"
-                            >
-                                <PostCard handleDeleteBtn={handle} postData={data} />
-                            </div>
-                        );
-                    }
+        // {pt-12 md:pt-0} <- for top nav bar in mobile screen
+        <div className="pt-12 md:pt-0 p-4 h-screen overflow-y-auto overflow-x-auto relative">
+            {(!posts || posts.length === 0) && !loadingPosts && (
+                <div className="flex flex-col justify-center items-center h-[300px]">
+                    <span className="text-3xl p-2 rounded-full bg-neutral-800">
+                        <MdPersonOff />
+                    </span>
+                    <h3 className="text-2xl font-semibold">
+                        No Posts from your followings
+                    </h3>
+                </div>
+            )}
+            {posts?.map((data, i) => {
+                if (posts.length === i + 1) {
                     return (
                         <div
+                            ref={lastSearchResultCardPostsRef}
                             key={i}
-                            className="border-b py-4 border-neutral-900"
+                            className="py-4"
                         >
-                            <PostCard handleDeleteBtn={handle} postData={data} />
+                            <PostCard
+                                handleDeleteBtn={handle}
+                                postData={data}
+                            />
                         </div>
                     );
-                })}
-                {loadingPosts && <Loading />}
-            </div>
+                }
+                return (
+                    <div key={i} className="py-4 border-b border-whiteAlpha2">
+                        <PostCard handleDeleteBtn={handle} postData={data} />
+                    </div>
+                );
+            })}
+            {loadingPosts && (
+                <>
+                    <div className="py-4 border-b border-whiteAlpha2">
+                        <PostCardLoading />
+                    </div>
+                    <div className="py-4">
+                        <PostCardLoading />
+                    </div>
+                </>
+            )}
         </div>
     );
 };

@@ -1,10 +1,9 @@
 // react
-import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
-import { BiSolidCamera } from "react-icons/bi";
+import { useForm } from "react-hook-form";
 import { AiFillDelete } from "react-icons/ai";
+import { useMutation, useQuery } from "react-query";
+import { Link, useNavigate } from "react-router-dom";
 
 // api
 import * as apiClient from "../apiClient";
@@ -22,6 +21,8 @@ import { imageDataUrlToFile } from "../lib/imageDataUrlToFile";
 import { Area } from "react-easy-crop";
 
 // image
+import { TbCameraPlus } from "react-icons/tb";
+import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 
 export type UserDataFormType = {
@@ -53,17 +54,16 @@ const EditUserData = () => {
         reset,
         setValue,
         watch,
-        formState: { errors },
     } = useForm<UserDataFormType>();
 
     useEffect(() => {
         reset(userData);
     }, [userData, reset]);
 
-    const { mutate, isLoading } = useMutation(apiClient.editUserDataById, {
+    const { mutate, isLoading } = useMutation(apiClient.editUserData, {
         onSuccess: async () => {
-            showToast({ message: "Saved", type: "SUCCESS" });
-            navigate("/home");
+            showToast({ message: "Changes saved, Profile Updated!", type: "SUCCESS" });
+            navigate("/profile/me");
         },
         onError: (error: Error) => {
             showToast({ message: error.message, type: "ERROR" });
@@ -84,7 +84,7 @@ const EditUserData = () => {
 
         if (userData) {
             // for edit page
-            formData.append("userId", userData.userId);
+            formData.append("userId", userData.userId.toString());
         }
 
         formData.append("description", userDataForm.description);
@@ -114,6 +114,7 @@ const EditUserData = () => {
         mutate(formData);
     };
 
+    // image stuff
     useEffect(() => {
         const imageFile = watch("profilePicture");
         if (imageFile && imageFile.length > 0) {
@@ -166,6 +167,11 @@ const EditUserData = () => {
         resizeProfilePicture(croppedArea);
     };
 
+    const onCropCancel = () => {
+        setToggleCropWindow(false);
+        setProfilePictureShow(watch("profilePictureUrl"));
+    };
+
     // for length check of description
     const [numOfLettersInDescription, setNumOfLettersInDescription] =
         useState<number>(0);
@@ -177,160 +183,183 @@ const EditUserData = () => {
     }, [watch("description")]);
 
     return (
-        <form
-            className="flex flex-col gap-5 "
-            onSubmit={handleSubmit(onSubmit)}
-            autoComplete="off"
-            encType="multipart/form-data"
-        >
-            <h2 className="text-3xl font-bold">Edit Profile</h2>
+        <div className="pt-14 md:pt-0 overflow-auto flex justify-center h-screen select-none">
+            <form
+                className="max-w-[600px] w-[calc(100%-20px)] h-fit p-6 flex flex-col gap-3 rounded-lg border border-whiteAlpha2"
+                onSubmit={handleSubmit(onSubmit)}
+                autoComplete="off"
+                encType="multipart/form-data"
+            >
+                <h2 className="text-xl mb-2 pb-2 text-whiteAlpha1 border-b border-whiteAlpha2">
+                    Edit Profile
+                </h2>
 
-            {toggleCropWindow && (
-                <ImageCropper
-                    image={profilePictureShow}
-                    ratioX={1}
-                    ratioY={1}
-                    onCropDone={onCropDone}
-                    onCropCancel={() =>
-                        setToggleCropWindow((prevValue) => !prevValue)
-                    }
-                />
-            )}
+                {toggleCropWindow && (
+                    <ImageCropper
+                        image={profilePictureShow}
+                        ratioX={1}
+                        ratioY={1}
+                        onCropDone={onCropDone}
+                        onCropCancel={onCropCancel}
+                    />
+                )}
 
-            {/* image select & preview */}
-            <div className="flex flex-col justify-center items-center">
-                <div className="relative">
-                    <div className="relative group w-[150px] h-[150px]">
-                        <img
-                            src={
-                                profilePictureShow === ""
-                                    ? defaultProfilePicture
-                                    : profilePictureShow
-                            }
-                            className="h-full w-full object-cover rounded-full"
-                        />
-                    </div>
-                    <button
-                        onClick={(e) => handleDeleteBtn(e)}
-                        className="absolute z-0 top-[0%] left-[50%] translate-x-[-50%] translate-y-[-50%] text-2xl p-1 bg-red-700 rounded-full"
-                    >
-                        <AiFillDelete />
-                    </button>
-                    <label>
-                        <div className="absolute z-0 bottom-[0%] left-[70%] text-2xl p-1 bg-green-700 rounded-full">
-                            <BiSolidCamera />
+                {/* image select & preview */}
+                <div className="flex flex-col justify-center items-center ">
+                    <div className="relative rounded-full border border-whiteAlpha2 hover:border-blue-500/50 m-2">
+                        <div className="relative group size-[150px] bg-whiteAlpha2 hover:bg-blue-500/50 rounded-full">
+                            <img
+                                src={
+                                    profilePictureShow === ""
+                                        ? defaultProfilePicture
+                                        : profilePictureShow
+                                }
+                                className="h-full w-full object-cover rounded-full opacity-80"
+                            />
                         </div>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            {...register("profilePicture")}
-                        />
-                    </label>
-                </div>
-            </div>
-
-            {/* form fields */}
-            <div className="flex flex-col gap-5">
-                <label className="text-neutral-200 text-sm font-bold flex-1">
-                    Name
-                    <input
-                        className="bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-2 px-2 font-normal focus:outline-none"
-                        type="text"
-                        {...register("name")}
-                    />
-                    {errors.name && (
-                        <span className="text-red-500 font-normal">
-                            {errors.name.message}
-                        </span>
-                    )}
-                </label>
-
-                <label className="text-neutral-200 text-sm font-bold flex-1">
-                    Description
-                    <textarea
-                        rows={5}
-                        maxLength={MAX_LENGTH_OF_DESCRIPTION}
-                        className="resize-none bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-1 px-2 font-normal focus:outline-none"
-                        {...register("description")}
-                    />
-                    {errors.description && (
-                        <span className="text-red-500 font-normal">
-                            {errors.description.message}
-                        </span>
-                    )}
-                    <div className="float-end">
-                        <span id="current">{numOfLettersInDescription}</span>
-                        <span id="maximum">/{MAX_LENGTH_OF_DESCRIPTION}</span>
-                    </div>
-                </label>
-
-                <div>
-                    <label className="text-neutral-200 text-sm font-bold flex-1">
-                        Link 1
-                        <input
-                            className="bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-2 px-2 font-normal focus:outline-none"
-                            type="text"
-                            {...register("link1")}
-                        />
-                    </label>
-                    <label className="text-neutral-200 text-sm font-bold flex-1">
-                        Link 2
-                        <input
-                            className="bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-2 px-2 font-normal focus:outline-none"
-                            type="text"
-                            {...register("link2")}
-                        />
-                    </label>
-                    <label className="text-neutral-200 text-sm font-bold flex-1">
-                        Link 3
-                        <input
-                            className="bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-2 px-2 font-normal focus:outline-none"
-                            type="text"
-                            {...register("link3")}
-                        />
-                    </label>
-                </div>
-            </div>
-
-            {/* submit button */}
-            <span className="flex items-center justify-between">
-                <button
-                    disabled={isLoading}
-                    type="submit"
-                    className="flex items-center gap-2 px-3 py-1 bg-neutral-600 text-white font-bold text-xl rounded transition ease-in-out delay-150 hover:bg-amber-600 disabled:bg-amber-600 duration-300"
-                >
-                    {isLoading && (
-                        <svg
-                            className="animate-spin h-5 w-5"
-                            viewBox="0 0 24 24"
+                        <button
+                            onClick={(e) => handleDeleteBtn(e)}
+                            title="Delete Picture"
+                            className="absolute z-0 bottom-[0%] left-[70%] text-2xl p-1 bg-red-700 rounded-full"
                         >
-                            <circle
-                                className="opacity-10"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                            ></circle>
-                            <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                        </svg>
-                    )}
-                    {isLoading ? "Saving..." : "Save"}
-                </button>
+                            <AiFillDelete />
+                        </button>
+                        <label
+                            title="Delete Picture"
+                            className="cursor-pointer"
+                        >
+                            <div className="absolute z-0 top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] text-2xl p-1 bg-whiteAlpha1 rounded-full">
+                                <TbCameraPlus className="text-black2" />
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                {...register("profilePicture")}
+                            />
+                        </label>
+                    </div>
+                </div>
 
-                <span className="text-sm">
-                    Want to goto your home page?{" "}
-                    <Link to={"/home"} className="underline text-blue-300">
-                        Home
+                {/* form fields */}
+                <div className="flex flex-col gap-5 mx-2">
+                    {/* name */}
+                    <div className="relative">
+                        <input
+                            type="text"
+                            id="nameField"
+                            className="block rounded-md px-4 pb-2 pt-6 w-full bg-black1 border border-whiteAlpha2 focus:border-blue-500 appearance-none focus:outline-none peer"
+                            placeholder=" "
+                            {...register("name")}
+                        />
+                        <label
+                            htmlFor="nameField"
+                            className="absolute text-whiteAlpha1 duration-300 transform -translate-y-4 scale-75 top-5 z-10 origin-[0] start-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:text-blue-500 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                        >
+                            Name
+                        </label>
+                    </div>
+
+                    {/* description */}
+                    <div className="relative">
+                        <textarea
+                            id="descriptionField"
+                            rows={5}
+                            maxLength={MAX_LENGTH_OF_DESCRIPTION}
+                            className="block resize-none rounded-md px-4 pb-2 pt-6 w-full bg-black1 border border-whiteAlpha2 focus:border-blue-500 appearance-none focus:outline-none peer"
+                            placeholder=" "
+                            {...register("description")}
+                        />
+                        <label
+                            htmlFor="descriptionField"
+                            className="absolute text-whiteAlpha1 duration-300 transform -translate-y-4 scale-75 top-5 z-10 origin-[0] start-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:text-blue-500 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                        >
+                            Description
+                        </label>
+                        <div className="absolute top-0 right-0 mx-3 my-2 text-whiteAlpha1 text-xs">
+                            <span id="current">
+                                {numOfLettersInDescription}
+                            </span>
+                            <span id="maximum">
+                                /{MAX_LENGTH_OF_DESCRIPTION}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* links */}
+                    <>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                id="link1"
+                                className="block rounded-md px-4 pb-2 pt-6 w-full bg-black1 border border-whiteAlpha2 focus:border-blue-500 appearance-none focus:outline-none peer"
+                                placeholder=" "
+                                {...register("link1")}
+                            />
+                            <label
+                                htmlFor="link1"
+                                className="absolute text-whiteAlpha1 duration-300 transform -translate-y-4 scale-75 top-5 z-10 origin-[0] start-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:text-blue-500 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                            >
+                                Link 1
+                            </label>
+                        </div>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                id="link2"
+                                className="block rounded-md px-4 pb-2 pt-6 w-full bg-black1 border border-whiteAlpha2 focus:border-blue-500 appearance-none focus:outline-none peer"
+                                placeholder=" "
+                                {...register("link2")}
+                            />
+                            <label
+                                htmlFor="link2"
+                                className="absolute text-whiteAlpha1 duration-300 transform -translate-y-4 scale-75 top-5 z-10 origin-[0] start-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:text-blue-500 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                            >
+                                Link 2
+                            </label>
+                        </div>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                id="link3"
+                                className="block rounded-md px-4 pb-2 pt-6 w-full bg-black1 border border-whiteAlpha2 focus:border-blue-500 appearance-none focus:outline-none peer"
+                                placeholder=" "
+                                {...register("link3")}
+                            />
+                            <label
+                                htmlFor="link3"
+                                className="absolute text-whiteAlpha1 duration-300 transform -translate-y-4 scale-75 top-5 z-10 origin-[0] start-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:text-blue-500 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                            >
+                                Link 3
+                            </label>
+                        </div>
+                    </>
+                </div>
+
+                {/* submit button */}
+                <div className="w-full flex justify-center gap-5 items-center pt-4 mt-2 border-t border-whiteAlpha2">
+                    <button
+                        disabled={isLoading}
+                        type="submit"
+                        className="font-semibold py-1 px-2 w-[100px] rounded-full border border-whiteAlpha2 shadow-sm hover:shadow-blue-500 hover:bg-blue-600 transition-all delay-75 duration-200"
+                    >
+                        <span className="flex justify-center items-center gap-1">
+                            {isLoading && (
+                                <LoadingCircleSvg className="size-5" />
+                            )}
+                            {isLoading ? "Saving" : "Save"}
+                        </span>
+                    </button>
+                    <Link
+                        to={"/profile/me"}
+                        className="font-semibold text-center py-1 px-2 w-[100px] rounded-full border border-whiteAlpha2 shadow-sm hover:shadow-red-500 hover:bg-red-900 transition-all delay-75 duration-200"
+                    >
+                        {/* <AiOutlineClose className="size-7" /> */}
+                        Cancel
                     </Link>
-                </span>
-            </span>
-        </form>
+                </div>
+            </form>
+        </div>
     );
 };
 

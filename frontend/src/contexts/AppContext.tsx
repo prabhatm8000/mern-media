@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState } from "react";
-import Toast from "../components/Toast";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import * as apiClient from "../apiClient";
+import Toast from "../components/Toast";
+import { useSocketContext } from "./SocketContext";
 
 export type ToastMessage = {
     message: string;
@@ -11,7 +12,7 @@ export type ToastMessage = {
 export type AppContext = {
     showToast: (toastMessage: ToastMessage) => void;
     isLoggedIn: boolean;
-    currUserId: string | undefined
+    currUserId: string | undefined;
 };
 
 const AppContext = createContext<AppContext | undefined>(undefined);
@@ -27,10 +28,29 @@ export const AppContextProvider = ({
     children: React.ReactNode;
 }) => {
     const [toast, setToast] = useState<ToastMessage | undefined>(undefined);
+    const [connectSocket, setConnectSocket] = useState<boolean>(true);
 
-    const { isError, data } = useQuery("validateToken", apiClient.validateToken, {
-        retry: false,
-    });
+    const { data, isError } = useQuery(
+        "validateToken",
+        apiClient.validateToken,
+        {
+            retry: false,
+            onError: () => {
+                setConnectSocket(true);
+            },
+            onSuccess: () => {
+                setConnectSocket(false);
+            },
+        }
+    );
+
+    const socket = useSocketContext();
+
+    useEffect(() => {
+        if (!connectSocket) {
+            socket.connect();
+        }
+    }, [connectSocket]);
 
     return (
         <AppContext.Provider

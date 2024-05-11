@@ -17,32 +17,31 @@ export const signin = async (req: Request, res: Response) => {
     try {
         let user = await UserAuth.findOne({
             username: req.body.username,
-        });        
-
+        });
+    
         if (user) {
             return res.status(400).json({ message: "Username already exists" });
         }
-
+    
         // req.body -> {username, password}
         user = new UserAuth(req.body);
         await user.save();
-
+    
         // init UserData for new user
         const userData = new UserData({
             description: "",
             followerCount: 0,
             followingCount: 0,
-            joinedAt: new Date(),
             link1: "",
             link2: "",
             link3: "",
             name: "",
             postCount: 0,
             profilePictureUrl: "",
-            userId: user.id,
+            userId: user._id,
         });
         await userData.save();
-
+    
         // init Follow for new user
         const follow = new Follow({
             followers: [],
@@ -52,7 +51,7 @@ export const signin = async (req: Request, res: Response) => {
         await follow.save();
 
         const token = jwt.sign(
-            { userId: user.id },
+            { userId: user._id },
             process.env.JWT_SECRET_KEY as string,
             { expiresIn: "3d" }
         );

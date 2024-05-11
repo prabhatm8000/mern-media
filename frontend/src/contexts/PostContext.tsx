@@ -1,23 +1,15 @@
 import { Dispatch, createContext, useContext, useReducer } from "react";
-
-type StateType = any[];
-
-type ActionType =
-    | {
-          type: "SET_POSTS";
-          payload: any[];
-      }
-    | { type: "RESET" };
+import { PostActionType, PostStateType } from "../types/contextTypes";
 
 export const PostsContext = createContext<{
-    state: StateType;
-    dispatch: Dispatch<ActionType>;
+    state: PostStateType;
+    dispatch: Dispatch<PostActionType>;
 }>({
     state: [],
     dispatch: () => {},
 });
 
-export const postsReducer = (state: StateType, action: ActionType) => {
+export const postsReducer = (state: PostStateType, action: PostActionType) => {
     switch (action.type) {
         case "SET_POSTS":
             return action.payload;
@@ -37,7 +29,7 @@ export const PostsContextProvider = ({
 }: {
     children: React.ReactNode;
 }) => {
-    const [state, dispatch] = useReducer(postsReducer, [] as StateType);
+    const [state, dispatch] = useReducer(postsReducer, [] as PostStateType);
 
     return (
         <PostsContext.Provider value={{ state, dispatch }}>

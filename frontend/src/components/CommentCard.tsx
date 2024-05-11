@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
-import { GoDotFill } from "react-icons/go";
 import { AiFillDelete } from "react-icons/ai";
+import { GoDotFill } from "react-icons/go";
+import { Link } from "react-router-dom";
 
 // type
 import { PostCommentUserDataType } from "../../../backend/src/types/types";
+
 
 // date-fns
 import { formatDistanceToNow } from "date-fns";
@@ -23,43 +24,50 @@ const CommentCard = ({ comment, handleDeleteBtn }: CommentCardProps) => {
     const { currUserId } = useAppContext();
 
     return (
-        <div className="flex items-start gap-2 pb-2">
-            {/* profilePicture with delete btn */}
-            <div className="flex flex-col items-center gap-1">
-                <Link to={`/profile/${comment.userId}`}>
-                    <img
-                        src={
-                            comment.profilePictureUrl.length > 0
-                                ? comment.profilePictureUrl
-                                : defaultProfilePicture
-                        }
-                        alt={comment.username}
-                        className="w-[30px] h-[30px] object-cover rounded-full"
-                    />
-                </Link>
-                {currUserId === comment.userId && (
-                    <button
-                        className="text-xl text-red-500"
-                        onClick={() => handleDeleteBtn(comment._id)}
-                    >
-                        <AiFillDelete />
-                    </button>
-                )}
-            </div>
+        <div className="grid grid-cols-[25px_1fr] items-start justify-start gap-2 m-2 relative">
+            {/* profilePicture */}
+            <Link to={`/profile/${comment.userId}`}>
+                <img
+                    src={
+                        comment.profilePictureUrl.length > 0
+                            ? comment.profilePictureUrl
+                            : defaultProfilePicture
+                    }
+                    alt={comment.username}
+                    className="size-[25px] object-cover rounded-full"
+                />
+            </Link>
 
             {/* comment data */}
             <div className="flex flex-col gap-0">
-                {/* meta data */}
-                <div className="flex items-center justify-start gap-0 text-sm text-stone-400">
-                    <Link to={`/profile/${comment.userId}`}>
-                        <span className="font-semibold">
-                            {comment.username}
+                {/* userdata */}
+                <div className="text-sm text-white3">
+                    <div className="flex items-center justify-start gap-0">
+                        <Link to={`/profile/${comment.userId}`}>
+                            <span className="font-semibold">
+                                {comment.username}
+                            </span>
+                        </Link>
+                        <GoDotFill className="text-sm" />
+                        <span className="">
+                            {formatDistanceToNow(
+                                new Date(comment.commentedAt),
+                                {
+                                    addSuffix: true,
+                                }
+                            )}
                         </span>
-                    </Link>
-                    <GoDotFill className="text-sm" />
-                    <span className="">
-                        {formatDistanceToNow(new Date(comment.commentedOn))} ago
-                    </span>
+                    </div>
+                    {currUserId === comment.userId.toString() && (
+                        <button
+                            className=" absolute top-0 right-0 mx-2"
+                            onClick={() =>
+                                handleDeleteBtn(comment._id.toString())
+                            }
+                        >
+                            <AiFillDelete className="size-5 text-red-500" />
+                        </button>
+                    )}
                 </div>
 
                 {/* comment */}

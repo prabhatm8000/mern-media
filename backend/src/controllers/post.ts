@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { PostType } from "../types/types";
-import { deleteImageByURL, uploadPostImages } from "../cloudinary";
+import { deleteImageByURL, uploadPostImages } from "../utils/cloudinary";
 import Post from "../models/post";
-import UserAuth from "../models/userAuth";
 import UserData from "../models/userData";
 import Follow from "../models/follow";
 import Notification from "../models/notifications";
+import mongoose from "mongoose";
+import { PostType } from "../types/types";
 
 export const addPost = async (req: Request, res: Response) => {
     try {
@@ -22,8 +22,7 @@ export const addPost = async (req: Request, res: Response) => {
 
         postData.commentCount = 0;
         postData.likeCount = 0;
-        postData.likes = [];
-        postData.postedAt = new Date();
+        postData.likes = new mongoose.Types.Array();
         postData.userId = req.userId;
 
         // saving to db
@@ -50,134 +49,151 @@ export const getPostHome = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     try {
-        const follow = await Follow.findOne(
-            { userId: req.userId },
-            { followings: 1 }
-        );
-
-        if (!follow) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        const userIds = follow.followings;
-
-        const posts = await Post.aggregate([
+        const homePosts = await Follow.aggregate([
             {
-                $match: { userId: { $in: userIds } },
-            },
-            {
-                $addFields: {
-                    doILike: {
-                        $in: [req.userId, "$likes"],
-                    },
+                $match: {
+                    userId: new mongoose.Types.ObjectId(req.userId),
                 },
             },
+            {
+                $lookup: {
+                    from: "Post", // Assuming the collection name is "posts"
+                    let: { followings: "$followings" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $in: ["$userId", "$$followings"],
+                                },
+                            },
+                        },
+                        {
+                            $addFields: {
+                                doILike: {
+                                    $in: [
+                                        new mongoose.Types.ObjectId(req.userId),
+                                        "$likes",
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: "UserAuth", // Assuming the collection name is "UserAuth"
+                                localField: "userId",
+                                foreignField: "_id",
+                                as: "userAuth",
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: "UserData", // Assuming the collection name is "UserData"
+                                localField: "userId",
+                                foreignField: "userId",
+                                as: "userData",
+                            },
+                        },
+                        { $unwind: "$userAuth" },
+                        { $unwind: "$userData" },
+                        {
+                            $project: {
+                                _id: 1,
+                                title: 1,
+                                caption: 1,
+                                imageUrls: 1,
+                                likeCount: 1,
+                                commentCount: 1,
+                                userId: 1,
+                                postedAt: "$created_at",
+                                doILike: 1,
+
+                                username: "$userAuth.username",
+                                name: "$userData.name",
+                                profilePictureUrl:
+                                    "$userData.profilePictureUrl",
+                            },
+                        },
+                        {
+                            $sort: {
+                                postedAt: -1,
+                            },
+                        },
+                        { $skip: skip },
+                        { $limit: limit },
+                    ],
+                    as: "posts",
+                },
+            },
+            { $unwind: "$posts" },
             {
                 $project: {
-                    _id: 1,
-                    title: 1,
-                    caption: 1,
-                    imageUrls: 1,
-                    likeCount: 1,
-                    commentCount: 1,
-                    userId: 1,
-                    postedAt: 1,
-                    doILike: 1,
+                    _id: "$posts._id",
+                    title: "$posts.title",
+                    caption: "$posts.caption",
+                    imageUrls: "$posts.imageUrls",
+                    likeCount: "$posts.likeCount",
+                    commentCount: "$posts.commentCount",
+                    userId: "$posts.userId",
+                    postedAt: "$posts.postedAt",
+                    doILike: "$posts.doILike",
+
+                    username: "$posts.username",
+                    name: "$posts.name",
+                    profilePictureUrl: "$posts.profilePictureUrl",
                 },
-            },
-            {
-                $sort: { postedAt: -1 }, // Sort by postedAt
-            },
-            {
-                $skip: skip,
-            },
-            {
-                $limit: limit,
             },
         ]);
 
-        // for username
-        const userAuth = await UserAuth.find(
-            { _id: { $in: userIds } },
-            { username: 1, userId: 1 }
-        );
-
-        // for profilePictureUrl
-        const userData = await UserData.find(
-            { userId: { $in: userIds } },
-            { name: 1, profilePictureUrl: 1, userId: 1 }
-        );
-
-        const response: PostType[] = [];
-        for (let index = 0; index < posts.length; index++) {
-            const item = posts[index];
-
-            let username = "";
-            for (let j = 0; j < userAuth.length; j++) {
-                const data = userAuth[j];
-                if (data._id.toString() === item.userId) {
-                    username = data.username;
-                    break;
-                }
-            }
-
-            let name = "";
-            let profilePictureUrl = "";
-            for (let j = 0; j < userData.length; j++) {
-                const data = userData[j];
-                if (data.userId === item.userId) {
-                    name = data.name;
-                    profilePictureUrl = data.profilePictureUrl;
-                    break;
-                }
-            }
-
-            response.push({
-                _id: item._id,
-                title: item.title,
-                caption: item.caption,
-                imageUrls: item.imageUrls,
-                likes: undefined,
-                likeCount: item.likeCount,
-                commentCount: item.commentCount,
-                userId: item.userId,
-                postedAt: item.postedAt,
-                name,
-                username,
-                profilePictureUrl,
-                doILike: item.doILike,
-            });
-        }
-
-        res.status(200).json(response);
+        res.status(200).json(homePosts);
     } catch (error) {
-        console.log("error while getting post by userId ", error);
+        console.log("error while getting home posts", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
 
 export const getPostsByUserId = async (req: Request, res: Response) => {
-    let userId = req.query.userId as string;
+    let userId =
+        req.query.userId === "me" ? req.userId : (req.query.userId as string);
+
     const limit = parseInt(req.query.limit ? req.query.limit.toString() : "5");
     const page = parseInt(req.query.page ? req.query.page.toString() : "1");
     const skip = (page - 1) * limit;
 
     try {
-        // if userId is equal to me send the current userData
-        if (userId === "me") {
-            userId = req.userId;
-        }
         const posts = await Post.aggregate([
             {
-                $match: { userId },
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                },
             },
             {
                 $addFields: {
                     doILike: {
-                        $in: [req.userId, "$likes"],
+                        $in: [
+                            new mongoose.Types.ObjectId(req.userId),
+                            "$likes",
+                        ],
                     },
                 },
             },
+            {
+                $lookup: {
+                    from: "UserAuth",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userAuthData",
+                },
+            },
+            {
+                $lookup: {
+                    from: "UserData",
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userData",
+                },
+            },
+            { $unwind: "$userAuthData" },
+            { $unwind: "$userData" },
             {
                 $project: {
                     _id: 1,
@@ -187,51 +203,24 @@ export const getPostsByUserId = async (req: Request, res: Response) => {
                     likeCount: 1,
                     commentCount: 1,
                     userId: 1,
-                    postedAt: 1,
+                    postedAt: "$created_at",
                     doILike: 1,
+
+                    username: "$userAuthData.username",
+                    name: "$userData.name",
+                    profilePictureUrl: "$userData.profilePictureUrl",
                 },
             },
             {
-                $sort: { postedAt: -1 }, // Sort by postedAt
+                $sort: {
+                    postedAt: -1,
+                },
             },
-            {
-                $skip: skip,
-            },
-            {
-                $limit: limit,
-            },
+            { $skip: skip },
+            { $limit: limit },
         ]);
 
-        // for username
-        const userAuth = await UserAuth.findById(userId, { username: 1 });
-
-        // for profilePictureUrl
-        const userData = await UserData.findOne(
-            { userId },
-            { name: 1, profilePictureUrl: 1 }
-        );
-
-        const response: PostType[] = [];
-        for (let index = 0; index < posts.length; index++) {
-            const item = posts[index];
-            response.push({
-                _id: item._id,
-                title: item.title,
-                caption: item.caption,
-                imageUrls: item.imageUrls,
-                likes: undefined,
-                likeCount: item.likeCount,
-                commentCount: item.commentCount,
-                userId: item.userId,
-                postedAt: item.postedAt,
-                name: userData?.name,
-                username: userAuth?.username,
-                profilePictureUrl: userData?.profilePictureUrl,
-                doILike: item.doILike,
-            });
-        }
-
-        res.status(200).json(response);
+        res.status(200).json(posts);
     } catch (error) {
         console.log("error while getting post by userId ", error);
         res.status(500).json({ message: "Something went wrong" });
@@ -241,49 +230,50 @@ export const getPostsByUserId = async (req: Request, res: Response) => {
 export const getPostById = async (req: Request, res: Response) => {
     const postId = req.params.postId;
     try {
-        const post = await Post.findById(postId, { likes: 0 });
+        const post = await Post.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(postId),
+                },
+            },
+            {
+                $lookup: {
+                    from: "UserAuth",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userAuthData",
+                },
+            },
+            {
+                $lookup: {
+                    from: "UserData",
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userData",
+                },
+            },
+            { $unwind: "$userAuthData" },
+            { $unwind: "$userData" },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    caption: 1,
+                    imageUrls: 1,
+                    likeCount: 1,
+                    commentCount: 1,
+                    userId: 1,
+                    postedAt: "$created_at",
+                    doILike: 1,
 
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-        }
+                    username: "$userAuth.username",
+                    name: "$userData.name",
+                    profilePictureUrl: "$userData.profilePictureUrl",
+                },
+            },
+        ]);
 
-        // for username
-        const userAuth = await UserAuth.findById(post.userId, { username: 1 });
-
-        // for profilePictureUrl
-        const userData = await UserData.findOne(
-            { userId: post.userId },
-            { name: 1, profilePictureUrl: 1 }
-        );
-
-        let flag: boolean = false;
-
-        if (post.likes) {
-            for (let index = 0; index < post.likes.length; index++) {
-                if (post.likes[index] === req.userId) {
-                    flag = true;
-                    break;
-                }
-            }
-        }
-
-        const response: PostType = {
-            _id: post._id,
-            title: post.title,
-            caption: post.caption,
-            imageUrls: post.imageUrls,
-            likes: undefined,
-            likeCount: post.likeCount,
-            commentCount: post.commentCount,
-            userId: post.userId,
-            postedAt: post.postedAt,
-            name: userData?.name,
-            username: userAuth?.username,
-            profilePictureUrl: userData?.profilePictureUrl,
-            doILike: flag,
-        };
-
-        res.status(200).json(response);
+        res.status(200).json(post[0]);
     } catch (error) {
         console.log("error while getting post by Id", error);
         res.status(500).json({ message: "Something went wrong" });
@@ -330,9 +320,17 @@ export const likeUnlike = async (req: Request, res: Response) => {
             return res.status(404).json({ message: "Post not found" });
         }
 
-        const index = post.likes?.indexOf(req.userId);
+        const isLiked = post.likes?.includes(req.userId);
 
-        if (index === -1) {
+        if (isLiked) {
+            // already liked -> unlike
+            await Post.findOneAndUpdate(
+                { _id: postId },
+                { $pull: { likes: req.userId }, $inc: { likeCount: -1 } },
+                { new: true }
+            );
+            return res.status(200).json({ message: "Post like removed" });
+        } else {
             // already unliked -> like
             const newData = await Post.findOneAndUpdate(
                 { _id: postId },
@@ -343,21 +341,12 @@ export const likeUnlike = async (req: Request, res: Response) => {
             // pushing notification for like to your post to the user who posted the post
             await Notification.create({
                 userId: newData?.userId,
-                notificationForm: req.userId,
+                notificationFormUserId: req.userId,
                 notificationFor: "liked your post.",
                 postId: postId,
-                at: new Date(),
                 readStatus: false,
             });
             return res.status(200).json({ message: "Post liked" });
-        } else {
-            // already liked -> unlike
-            const newData = await Post.findOneAndUpdate(
-                { _id: postId },
-                { $pull: { likes: req.userId }, $inc: { likeCount: -1 } },
-                { new: true }
-            );
-            return res.status(200).json({ message: "Post like removed" });
         }
     } catch (error) {
         console.log("error in likeUnlike", error);

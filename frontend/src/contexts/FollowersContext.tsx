@@ -1,24 +1,15 @@
 import { Dispatch, createContext, useContext, useReducer } from "react";
-import { UserDataBasicType } from "../../../backend/src/types/types";
-
-type StateType = UserDataBasicType[];
-
-type ActionType =
-    | {
-          type: "SET_FOLLOWERS";
-          payload: UserDataBasicType[];
-      }
-    | { type: "RESET" };
+import { FollowersActionType, FollowersStateType } from "../types/contextTypes";
 
 export const FollowersContext = createContext<{
-    state: StateType;
-    dispatch: Dispatch<ActionType>;
+    state: FollowersStateType;
+    dispatch: Dispatch<FollowersActionType>;
 }>({
     state: [],
     dispatch: () => {},
 });
 
-export const followersReducer = (state: StateType, action: ActionType) => {
+export const followersReducer = (state: FollowersStateType, action: FollowersActionType) => {
     switch (action.type) {
         case "SET_FOLLOWERS":
             return action.payload;
@@ -38,7 +29,7 @@ export const FollowersContextProvider = ({
 }: {
     children: React.ReactNode;
 }) => {
-    const [state, dispatch] = useReducer(followersReducer, [] as StateType);
+    const [state, dispatch] = useReducer(followersReducer, [] as FollowersStateType);
 
     return (
         <FollowersContext.Provider value={{ state, dispatch }}>

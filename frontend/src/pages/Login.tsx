@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../apiClient";
 import { useAppContext } from "../contexts/AppContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BiLogoGithub } from "react-icons/bi";
+import LoadingCircleSvg from "../components/LoadingCircleSvg";
 
 export type LoginFormData = {
     username: string;
@@ -19,11 +21,12 @@ const Login = () => {
         register,
         handleSubmit,
         formState: { errors },
+        watch
     } = useForm<LoginFormData>();
 
-    const mutation = useMutation(apiClient.login, {
+    const { mutate, isLoading } = useMutation(apiClient.login, {
         onSuccess: async () => {
-            showToast({ message: "Sign in Successfull!", type: "SUCCESS" });
+            showToast({ message: `Login successfull! Hello, ${watch("username")} 👋🏽`, type: "SUCCESS" });
             await queryClient.invalidateQueries("validateToken");
 
             // got request for login from other locations (like from, login to book)
@@ -37,37 +40,48 @@ const Login = () => {
     });
 
     const onSubmit = handleSubmit((formData) => {
-        mutation.mutate(formData);
+        mutate(formData);
     });
 
     return (
-        <form className="flex flex-col gap-5 " onSubmit={onSubmit} autoComplete="off">
-            <h2 className="text-3xl font-bold">Login</h2>
+        <div className="flex justify-center items-center h-screen select-none">
+            <form
+                className="max-w-[300px] h-fit px-10 py-8 rounded border border-whiteAlpha2 shadow-lg hover:shadow-black2 transition-shadow delay-75 duration-500"
+                onSubmit={onSubmit}
+                autoComplete="off"
+            >
+                <h2 className="text-5xl text-center mb-10 font-bloodySunday">
+                    MernMedia
+                </h2>
 
-            <div className="flex flex-col gap-5">
-                <label className="text-neutral-200 text-sm font-bold flex-1">
-                    Username
+                <div className="space-y-2 mb-6">
                     <input
-                        className="bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-2 px-2 font-normal focus:outline-none"
+                        placeholder="Username"
+                        className={`bg-black1 text-sm border rounded ${
+                            errors.username
+                                ? "border-red-500"
+                                : "border-whiteAlpha2"
+                        } w-full py-2 px-3 focus:outline-none focus:border-blue-500 placeholder:text-whiteAlpha1`}
                         type="text"
                         {...register("username", {
-                            required: "This field is required",
+                            required: "Username is required",
                         })}
                     />
                     {errors.username && (
-                        <span className="text-red-500 font-normal">
-                            {errors.username.message}
+                        <span className="text-red-500 text-sm">
+                            *{errors.username.message}
                         </span>
                     )}
-                </label>
-
-                <label className="text-neutral-200 text-sm font-bold flex-1">
-                    Password
                     <input
-                        className="bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-2 px-2 font-normal focus:outline-none"
+                        placeholder="Password"
+                        className={`bg-black1 text-sm border rounded ${
+                            errors.password
+                                ? "border-red-500"
+                                : "border-whiteAlpha2"
+                        } w-full py-2 px-3 focus:outline-none focus:border-blue-500 placeholder:text-whiteAlpha1`}
                         type="password"
                         {...register("password", {
-                            required: "This field is required",
+                            required: "Password is required",
                             minLength: {
                                 value: 6,
                                 message:
@@ -76,28 +90,39 @@ const Login = () => {
                         })}
                     />
                     {errors.password && (
-                        <span className="text-red-500 font-normal">
-                            {errors.password.message}
+                        <span className="text-red-500 text-sm">
+                            *{errors.password.message}
                         </span>
                     )}
-                </label>
-            </div>
+                </div>
 
-            <span className="flex items-center justify-between">
                 <button
+                    className="mb-6 relative w-full items-center justify-start inline-block px-2 py-1 overflow-hidden font-medium transition-all bg-blue-600 rounded-full hover:bg-white group"
                     type="submit"
-                    className="bg-amber-500 text-white p-2 font-bold rounded transition ease-in-out delay-150 hover:bg-amber-600 duration-300"
                 >
-                    Login
+                    <span className="absolute inset-0 border-0 group-hover:border-[25px] ease-linear duration-100 transition-all border-white rounded-full"></span>
+                    <span className="relative w-full font-semibold text-sm text-white transition-colors duration-300 ease-in-out group-hover:text-blue-600">
+                        <span className="flex justify-center items-center gap-1">
+                            {isLoading && (
+                                <LoadingCircleSvg className="size-5" />
+                            )}
+                            {isLoading ? "Please Wait..." : "Login"}
+                        </span>
+                    </span>
                 </button>
-                <span className="text-sm">
-                    Don't have an Account?{" "}
+
+                <div className="mb-6 text-sm text-center">
+                    Don't have an Account?
                     <Link to={"/sign-in"} className="underline text-blue-300">
-                        Create one
+                        create
                     </Link>
-                </span>
-            </span>
-        </form>
+                </div>
+
+                <div className="flex justify-center items-center">
+                    <BiLogoGithub className="size-12" />
+                </div>
+            </form>
+        </div>
     );
 };
 

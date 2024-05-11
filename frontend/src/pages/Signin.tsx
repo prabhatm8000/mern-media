@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from "react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../contexts/AppContext";
 import * as apiClient from "../apiClient";
+import { BiLogoGithub } from "react-icons/bi";
+import LoadingCircleSvg from "../components/LoadingCircleSvg";
 
 export type SigninFormDataType = {
     username: string;
@@ -22,9 +24,14 @@ const Signin = () => {
         formState: { errors },
     } = useForm<SigninFormDataType>();
 
-    const mutation = useMutation(apiClient.signin, {
+    const { mutate, isLoading } = useMutation(apiClient.signin, {
         onSuccess: async () => {
-            showToast({ type: "SUCCESS", message: "Sign In Success!" });
+            showToast({
+                type: "SUCCESS",
+                message: `Account creation successfull! Hello, ${watch(
+                    "username"
+                )} 👋🏽`,
+            });
             await queryClient.invalidateQueries("validateToken");
             navigate("/edit-profile");
         },
@@ -34,38 +41,47 @@ const Signin = () => {
     });
 
     const onSubmit = handleSubmit((formData) => {
-        mutation.mutate(formData);
+        mutate(formData);
     });
 
     return (
-        <form
-            onSubmit={onSubmit}
-            className="flex flex-col gap-10"
-            autoComplete="off"
-        >
-            <h2 className="text-3xl font-bold">Create an Account</h2>
-            <div className="flex flex-col gap-5">
-                <label className="text-neutral-200 text-sm font-bold flex-1">
-                    Username
+        <div className="flex justify-center items-center h-screen select-none">
+            <form
+                className="max-w-[300px] h-fit px-10 py-8 rounded border border-whiteAlpha2 shadow-lg hover:shadow-black2 transition-shadow delay-75 duration-500"
+                onSubmit={onSubmit}
+                autoComplete="off"
+            >
+                <h2 className="text-5xl font-bloodySunday text-center mb-10">
+                    MernMedia
+                </h2>
+
+                <div className="space-y-2 mb-6">
                     <input
-                        className="bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-2 px-2 font-normal focus:outline-none"
+                        placeholder="Username"
+                        className={`bg-black1 text-sm border rounded ${
+                            errors.username
+                                ? "border-red-500"
+                                : "border-whiteAlpha2"
+                        } w-full py-2 px-3 focus:outline-none focus:border-blue-500 placeholder:text-whiteAlpha1`}
                         type="text"
                         {...register("username", {
                             required: "This field is required",
                         })}
                     />
                     {errors.username && (
-                        <span className="text-red-500 font-normal">
-                            {errors.username.message}
+                        <span className="text-red-500 text-sm">
+                            *{errors.username.message}
                         </span>
                     )}
-                </label>
 
-                <label className="text-neutral-200 text-sm font-bold flex-1">
-                    Password
                     <input
-                        className="bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-2 px-2 font-normal focus:outline-none"
+                        className={`bg-black1 text-sm border rounded ${
+                            errors.password
+                                ? "border-red-500"
+                                : "border-whiteAlpha2"
+                        } w-full py-2 px-3 focus:outline-none focus:border-blue-500 placeholder:text-whiteAlpha1`}
                         type="password"
+                        placeholder="Password"
                         {...register("password", {
                             required: "This field is required",
                             minLength: {
@@ -76,17 +92,19 @@ const Signin = () => {
                         })}
                     />
                     {errors.password && (
-                        <span className="text-red-500 font-normal">
-                            {errors.password.message}
+                        <span className="text-red-500 text-sm">
+                            *{errors.password.message}
                         </span>
                     )}
-                </label>
 
-                <label className="text-neutral-200 text-sm font-bold flex-1">
-                    Confirm Password
                     <input
-                        className="bg-neutral-800 text-lg border rounded border-neutral-600 w-full py-2 px-2 font-normal focus:outline-none"
+                        className={`bg-black1 text-sm border rounded ${
+                            errors.confirmPassword
+                                ? "border-red-500"
+                                : "border-whiteAlpha2"
+                        } w-full py-2 px-3 focus:outline-none focus:border-blue-500 placeholder:text-whiteAlpha1`}
                         type="password"
+                        placeholder="Confirm Password"
                         {...register("confirmPassword", {
                             validate: (val) => {
                                 if (!val) {
@@ -98,28 +116,39 @@ const Signin = () => {
                         })}
                     />
                     {errors.confirmPassword && (
-                        <span className="text-red-500 font-normal">
-                            {errors.confirmPassword.message}
+                        <span className="text-red-500 text-sm">
+                            *{errors.confirmPassword.message}
                         </span>
                     )}
-                </label>
-            </div>
+                </div>
 
-            <span className="flex items-center justify-between">
                 <button
+                    className="mb-6 relative w-full items-center justify-start inline-block px-2 py-1 overflow-hidden font-medium transition-all bg-blue-600 rounded-full hover:bg-white group"
                     type="submit"
-                    className="bg-amber-500 text-white p-2 font-bold rounded transition ease-in-out delay-150 hover:bg-amber-600 duration-300"
                 >
-                    Create Account
+                    <span className="absolute inset-0 border-0 group-hover:border-[25px] ease-linear duration-100 transition-all border-white rounded-full"></span>
+                    <span className="relative w-full font-semibold text-sm text-white transition-colors duration-300 ease-in-out group-hover:text-blue-600">
+                        <span className="flex justify-center items-center gap-1">
+                            {isLoading && (
+                                <LoadingCircleSvg className="size-5" />
+                            )}
+                            {isLoading ? "Please Wait..." : "Create Account"}
+                        </span>
+                    </span>
                 </button>
-                <span className="text-sm">
-                    Already have an Account?{" "}
+
+                <div className="text-sm text-center mb-6">
+                    Already have an Account?
                     <Link to={"/"} className="underline text-blue-300">
-                        Login
+                        login
                     </Link>
-                </span>
-            </span>
-        </form>
+                </div>
+
+                <div className="flex justify-center items-center">
+                    <BiLogoGithub className="size-12" />
+                </div>
+            </form>
+        </div>
     );
 };
 

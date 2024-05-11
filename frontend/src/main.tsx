@@ -3,9 +3,14 @@ import App from "./App.tsx";
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { AppContextProvider } from "./contexts/AppContext.tsx";
-import { SearchResultContextProvider } from "./contexts/SearchContext.tsx";
 import { PostsContextProvider } from "./contexts/PostContext.tsx";
-import { CommentsContextProvider } from "./contexts/CommentContext.tsx";
+import { SocketContextProvider } from "./contexts/SocketContext.tsx";
+import { MessageContextProvider } from "./contexts/MessageContext.tsx";
+import { SearchResultContextProvider } from "./contexts/SearchContext.tsx";
+
+import "react-loading-skeleton/dist/skeleton.css";
+import { ChatsContextProvider } from "./contexts/ChatsContext.tsx";
+import { GroupChatsContextProvider } from "./contexts/GroupChatsContext.tsx";
 
 // by default Query client will fetch and retry multiple time,
 // if got an error
@@ -19,14 +24,20 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
-        <AppContextProvider>
-            <SearchResultContextProvider>
-                <PostsContextProvider>
-                    <CommentsContextProvider>
-                        <App />
-                    </CommentsContextProvider>
-                </PostsContextProvider>
-            </SearchResultContextProvider>
-        </AppContextProvider>
+        <SocketContextProvider>
+            <AppContextProvider>
+                <SearchResultContextProvider>
+                    <PostsContextProvider>
+                        <MessageContextProvider>
+                            <ChatsContextProvider>
+                                <GroupChatsContextProvider>
+                                    <App />
+                                </GroupChatsContextProvider>
+                            </ChatsContextProvider>
+                        </MessageContextProvider>
+                    </PostsContextProvider>
+                </SearchResultContextProvider>
+            </AppContextProvider>
+        </SocketContextProvider>
     </QueryClientProvider>
 );

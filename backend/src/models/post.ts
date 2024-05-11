@@ -1,39 +1,44 @@
 import mongoose from "mongoose";
-import { PostType } from "../types/types";
 
-const postSchema = new mongoose.Schema({
-    title: {
-        type: String,
-    },
-    caption: {
-        type: String,
-    },
-    imageUrls: [
-        {
+const postSchema = new mongoose.Schema(
+    {
+        title: {
             type: String,
         },
-    ],
-    likes: [
-        {
+        caption: {
             type: String,
         },
-    ],
-    likeCount: {
-        type: Number,
+        imageUrls: [
+            {
+                type: String,
+            },
+        ],
+        likes: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "UserAuth",
+            },
+        ],
+        likeCount: {
+            type: Number,
+            required: true,
+        },
+        commentCount: {
+            type: Number,
+            required: true,
+        },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "UserAuth",
+            required: true,
+        },
     },
-    commentCount: {
-        type: Number,
-    },
-    userId: {
-        type: String,
-        required: true,
-    },
-    postedAt: {
-        type: Date,
-        required: true,
-    },
-});
+    {
+        collection: "Post",
+        timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
+    }
+);
 
-const Post = mongoose.model<PostType>("Post", postSchema);
+const Post = mongoose.model("Post", postSchema);
 
 export default Post;
