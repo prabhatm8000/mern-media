@@ -72,7 +72,7 @@ io.use(verifySocketToken);
 setUpSocket(io);
 
 // serving frontend
-app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+// app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 
 // routes
 app.use("/api/auth", userAuth);
