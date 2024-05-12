@@ -9,11 +9,10 @@ import * as apiClient from "../apiClient";
 
 // context
 import { CiImageOn } from "react-icons/ci";
+import Carousel from "../components/Carousel";
+import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import { useAppContext } from "../contexts/AppContext";
 import { compressImages } from "../lib/compressImages";
-import { useHorizontalScroll } from "../lib/horizontalScroll";
-import LoadingCircleSvg from "../components/LoadingCircleSvg";
-import Carousel from "../components/Carousel";
 
 const MAX_LENGTH_OF_TITLE = 150;
 const MAX_LENGTH_OF_CAPTION = 500;
@@ -59,8 +58,6 @@ const AddPost = () => {
             }
         }
     }, [watch("imageFiles")]);
-
-    const scrollRef = useHorizontalScroll();
 
     // form submit and mutaion
     // #region

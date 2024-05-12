@@ -297,7 +297,10 @@ export const addPost = async (postFormData: FormData) => {
     });
 
     if (!response.ok) {
-        if (res) throw new Error("Something went wrong");
+        const error = await response.json();
+        if (error.message) throw new Error(error.message);
+
+        throw new Error("Something went wrong");
     }
 
     return await response.json();

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { ChatBlockType } from "../../../frontend/src/types/types";
 
 const chatBlockSchema = new mongoose.Schema(
     {
@@ -16,6 +15,6 @@ const chatBlockSchema = new mongoose.Schema(
     { collection: "ChatBlock" }
 );
 
-const ChatBlock = mongoose.model<ChatBlockType>("ChatBlock", chatBlockSchema);
+const ChatBlock = mongoose.model("ChatBlock", chatBlockSchema);
 
 export default ChatBlock;
