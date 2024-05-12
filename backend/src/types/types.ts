@@ -1,5 +1,3 @@
-import { Socket } from "socket.io";
-
 export type UserAuthType = {
     _id: any;
     username: string;
