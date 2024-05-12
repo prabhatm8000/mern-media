@@ -61,7 +61,6 @@ export const signin = async (req: Request, res: Response) => {
         // secure -> for https {only for production server}
         // maxAge -> will be similar to expiresIn {in milisecond}
         res.cookie("auth_token", token, {
-            httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             maxAge: 3 * 24 * 60 * 60 * 1000, // 3days in milesec
         });
@@ -100,7 +99,6 @@ export const login = async (req: Request, res: Response) => {
         );
 
         res.cookie("auth_token", token, {
-            httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             maxAge: 3 * 24 * 60 * 60 * 1000, // 3days in milesec,
         });
