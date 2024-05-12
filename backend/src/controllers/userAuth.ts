@@ -64,6 +64,7 @@ export const signin = async (req: Request, res: Response) => {
             httpOnly: true,
             secure: true,
             sameSite: "none",
+            domain: process.env.FRONTEND_URL,
             maxAge: 3 * 24 * 60 * 60 * 1000, // 3days in milesec
         });
 
@@ -104,6 +105,7 @@ export const login = async (req: Request, res: Response) => {
             httpOnly: true,
             sameSite: "none",
             secure: true,
+            domain: process.env.FRONTEND_URL,
             maxAge: 3 * 24 * 60 * 60 * 1000, // 3days in milesec,
         });
 
