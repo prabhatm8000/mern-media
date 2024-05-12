@@ -137,9 +137,3 @@ export type MessageType = {
     sentAt: Date;
     senderUserData: UserDataBasicType;
 };
-
-export class CtkSocket extends Socket {
-    // Define the additional property userId
-    userId?: any;
-    chatId?: any;
-}

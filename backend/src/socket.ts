@@ -1,4 +1,4 @@
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import mongoose from "mongoose";
 import {
     addMessageToDb,
@@ -6,7 +6,12 @@ import {
     membersInChat,
     userExistInChat,
 } from "./utils/helperDbOperations";
-import { CtkSocket } from "./types/types";
+
+export class CtkSocket extends Socket {
+    // Define the additional property userId
+    userId?: any;
+    chatId?: any;
+}
 
 const userSocketIdMap = new Map<string, string>();
 const chatRoomMap = new Map<string, Set<string>>();

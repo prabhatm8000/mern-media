@@ -2,7 +2,7 @@ import cookieParser from "cookie-parser";
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import mongoose from "mongoose";
-import { CtkSocket } from "../types/types";
+import type { CtkSocket } from "../socket";
 
 // adding a new propery userId: string <- Request <- Express
 declare global {
