@@ -170,17 +170,17 @@ const SideBarChat = () => {
             });
         };
 
-        let intervalId: number;
+        let timeoutId: number | undefined;
 
         if (searchQuery.length < 2) {
             setChats(chatsState);
             setGroupChats(groupChatsState);
         } else {
-            intervalId = setTimeout(search, 1500);
+            timeoutId = setTimeout(search, 1500);
         }
 
         return () => {
-            clearInterval(intervalId);
+            clearInterval(timeoutId);
         };
     }, [searchQuery]);
     // #endregion

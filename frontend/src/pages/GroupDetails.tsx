@@ -146,7 +146,7 @@ const GroupDetails = () => {
     );
 
     useEffect(() => {
-        let timeoutId: number;
+        let timeoutId: number | undefined;
         
         if (searchQuery.length >= 2) {
             timeoutId = setTimeout(
