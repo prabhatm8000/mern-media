@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Socket } from "socket.io";
 
 export type UserAuthType = {
-    _id: any;
+    _id: mongoose.Types.ObjectId;
     username: string;
     password: string;
 };
@@ -15,12 +15,12 @@ export type UserAuthData = {
 export type UserDataBasicType = {
     name: string;
     profilePictureUrl: string;
-    userId: any;
+    userId: mongoose.Types.ObjectId;
     username: string | undefined;
 };
 
 export type UserDataType = {
-    _id: any;
+    _id: mongoose.Types.ObjectId;
     description: string;
     followerCount: number;
     followingCount: number;
@@ -31,25 +31,25 @@ export type UserDataType = {
     name: string;
     postCount: number;
     profilePictureUrl: string;
-    userId: any;
+    userId: mongoose.Types.ObjectId;
     username: string | undefined;
 };
 
 export type FollowType = {
-    followers: mongoose.Types.Array<any>;
-    followings: mongoose.Types.Array<any>;
-    userId: any;
+    followers: mongoose.Types.Array<mongoose.Types.ObjectId>;
+    followings: mongoose.Types.Array<mongoose.Types.ObjectId>;
+    userId: mongoose.Types.ObjectId;
 };
 
 export type PostType = {
-    _id: any;
+    _id: mongoose.Types.ObjectId;
     title: string;
     caption: string;
     imageUrls: string[];
-    likes: mongoose.Types.Array<any> | undefined;
+    likes: mongoose.Types.Array<mongoose.Types.ObjectId> | undefined;
     likeCount: number;
     commentCount: number;
-    userId: any;
+    userId: mongoose.Types.ObjectId;
     postedAt: Date;
     name: string | undefined;
     username: string | undefined;
@@ -60,35 +60,35 @@ export type PostType = {
 export type PostCommentType = {
     comment: string;
     commentedAt: Date;
-    userId: any;
+    userId: mongoose.Types.ObjectId;
     postId: string;
 };
 
 export type PostCommentUserDataType = {
-    _id: any;
+    _id: mongoose.Types.ObjectId;
     comment: string;
     commentedAt: Date;
     username: string;
     profilePictureUrl: string;
-    userId: any;
-    postId: any;
+    userId: mongoose.Types.ObjectId;
+    postId: mongoose.Types.ObjectId;
 };
 
 export type NotificationsDataType = {
     notificationFor: string;
     notificationFrom: {
-        userId: any;
+        userId: mongoose.Types.ObjectId;
         username: string;
         profilePictureUrl: string;
     };
-    postId: any | undefined;
-    commentId: any | undefined;
+    postId: mongoose.Types.ObjectId | undefined;
+    commentId: mongoose.Types.ObjectId | undefined;
     at: Date;
     readStatus: boolean;
 };
 
 export type ChatBasicDataType = {
-    _id: any;
+    _id: mongoose.Types.ObjectId;
     userData: UserDataBasicType;
     newMessage?: boolean;
     lastMessage?: string;
@@ -96,42 +96,42 @@ export type ChatBasicDataType = {
 };
 
 export type GroupChatBasicDataType = {
-    _id: any;
+    _id: mongoose.Types.ObjectId;
     name: string;
     lastMessage?: string;
     newMessage?: boolean;
     lastMessageOn: Date;
     groupPictureUrl: string;
-    creator: any;
+    creator: mongoose.Types.ObjectId;
 };
 
 export type GroupChatFullDataType = {
-    _id: any;
+    _id: mongoose.Types.ObjectId;
     name: string;
     lastMessage?: string;
     lastMessageOn: Date;
     groupPictureUrl: string;
-    creator: any;
+    creator: mongoose.Types.ObjectId;
     creatorUserData: UserDataBasicType;
     description: string;
     noOfMembers: number;
 };
 
 export type GroupChatDataFormType = {
-    _id: any;
+    _id: mongoose.Types.ObjectId;
     name: string;
     lastMessage?: string;
     lastMessageOn: Date;
     groupPictureUrl: string;
-    creator: any;
+    creator: mongoose.Types.ObjectId;
     description: string;
     groupPicture: FileList;
 };
 
 export type MessageType = {
-    _id: any;
-    chatId: any;
-    sender: any;
+    _id: mongoose.Types.ObjectId;
+    chatId: mongoose.Types.ObjectId;
+    sender: mongoose.Types.ObjectId;
     content: string;
     attachments?: Array<string>;
     readStatus: boolean;
@@ -141,6 +141,6 @@ export type MessageType = {
 
 export class CtkSocket extends Socket {
     // Define the additional property userId
-    userId?: any;
-    chatId?: any;
+    userId?: mongoose.Types.ObjectId;
+    chatId?: mongoose.Types.ObjectId;
 }
