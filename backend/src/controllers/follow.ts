@@ -37,8 +37,16 @@ export const followUnfollow = async (req: Request, res: Response) => {
 
         if (isFollowing) {
             // if already following then unfollow
-            currentUser.followings.pull(followingUserId);
-            followingUser.followers.pull(req.userId);
+            await Follow.findOneAndUpdate(
+                { _id: req.userId },
+                { $pull: { followings: followingUserId } },
+                { new: true }
+            );
+            await Follow.findOneAndUpdate(
+                { _id: followingUserId },
+                { $pull: { followers: req.userId } },
+                { new: true }
+            );
         } else {
             // else follow
 
