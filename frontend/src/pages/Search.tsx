@@ -32,7 +32,7 @@ const Search = () => {
     );
 
     useEffect(() => {
-        let id: string | number | NodeJS.Timeout | undefined;
+        let id: number;
         if (searchQuery.length > 1 && !autoCompleteClicked) {
             // debouncing
             id = setTimeout(fetchAutoComplete, 1500);

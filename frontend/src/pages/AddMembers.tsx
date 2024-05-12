@@ -30,7 +30,7 @@ const AddMembers = () => {
     useEffect(() => {
         if (searchQuery.length < 2) return;
 
-        let timeoutId: string | number | NodeJS.Timeout | undefined;
+        let timeoutId: number;
 
         const fetchData = async () => {
             setIsFetching(true);

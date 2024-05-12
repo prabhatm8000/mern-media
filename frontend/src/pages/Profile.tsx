@@ -300,7 +300,7 @@ const Profile = () => {
             }
         };
 
-        let intervalId: string | number | NodeJS.Timeout | undefined;
+        let intervalId: number;
 
         if (searchQuery.length < 2) {
             setFollowers(followersState);

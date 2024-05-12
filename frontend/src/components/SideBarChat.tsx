@@ -170,7 +170,7 @@ const SideBarChat = () => {
             });
         };
 
-        let intervalId: string | number | NodeJS.Timeout | undefined;
+        let intervalId: number;
 
         if (searchQuery.length < 2) {
             setChats(chatsState);
