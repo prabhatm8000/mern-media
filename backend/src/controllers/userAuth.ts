@@ -18,15 +18,15 @@ export const signin = async (req: Request, res: Response) => {
         let user = await UserAuth.findOne({
             username: req.body.username,
         });
-    
+
         if (user) {
             return res.status(400).json({ message: "Username already exists" });
         }
-    
+
         // req.body -> {username, password}
         user = new UserAuth(req.body);
         await user.save();
-    
+
         // init UserData for new user
         const userData = new UserData({
             description: "",
@@ -41,7 +41,7 @@ export const signin = async (req: Request, res: Response) => {
             userId: user._id,
         });
         await userData.save();
-    
+
         // init Follow for new user
         const follow = new Follow({
             followers: [],
@@ -120,6 +120,9 @@ export const logout = async (req: Request, res: Response) => {
     // auth_token will be override and expires at the time of creation
     res.cookie("auth_token", "", {
         expires: new Date(0),
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
     });
     res.status(200).json({ message: "Signed out Successful" });
 };
