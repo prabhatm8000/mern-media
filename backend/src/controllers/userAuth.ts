@@ -62,8 +62,8 @@ export const signin = async (req: Request, res: Response) => {
         // maxAge -> will be similar to expiresIn {in milisecond}
         res.cookie("auth_token", token, {
             httpOnly: true,
-            secure: false,
-            // sameSite: "none",
+            secure: process.env.ENV === "PRO",
+            sameSite: process.env.ENV === "PRO" ? "none" : undefined,
             // domain: process.env.FRONTEND_URL,
             maxAge: 3 * 24 * 60 * 60 * 1000, // 3days in milesec
         });
@@ -103,8 +103,8 @@ export const login = async (req: Request, res: Response) => {
 
         res.cookie("auth_token", token, {
             httpOnly: true,
-            secure: false,
-            // sameSite: "none",
+            secure: process.env.ENV === "PRO",
+            sameSite: process.env.ENV === "PRO" ? "none" : undefined,
             maxAge: 3 * 24 * 60 * 60 * 1000, // 3days in milesec,
         });
 
@@ -120,8 +120,8 @@ export const logout = async (req: Request, res: Response) => {
     res.cookie("auth_token", "", {
         expires: new Date(0),
         httpOnly: true,
-        secure: false,
-        // sameSite: "none",
+        secure: process.env.ENV === "PRO",
+        sameSite: process.env.ENV === "PRO" ? "none" : undefined,
     });
     res.status(200).json({ message: "Signed out Successful" });
 };
