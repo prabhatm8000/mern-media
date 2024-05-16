@@ -332,24 +332,39 @@ export const getChats = async (req: Request, res: Response) => {
                 },
             },
             {
+                $lookup: {
+                    from: "ChatBlock",
+                    pipeline: [
+                        { $match: { userId: req.userId } },
+                        { $project: { blockedUserIds: 1 } },
+                    ],
+                    as: "chatBlock",
+                },
+            },
+            {
                 $unwind: "$userData",
             },
             {
                 $unwind: "$userAuthData",
             },
             { $unwind: "$lastMessageOn" },
+            { $unwind: "$chatBlock" },
             {
                 $match: {
                     "userData.userId": {
                         $ne: new mongoose.Types.ObjectId(req.userId),
                     },
-                },
-            },
-            {
-                $match: {
                     "userAuthData._id": {
                         $ne: new mongoose.Types.ObjectId(req.userId),
                     },
+                    // $expr: {
+                    //     $not: {
+                    //         $in: [
+                    //             "$userData.userId",
+                    //             "$chatBlock.blockedUserIds",
+                    //         ],
+                    //     },
+                    // },
                 },
             },
             {
@@ -364,6 +379,7 @@ export const getChats = async (req: Request, res: Response) => {
                     newMessage: 1,
                     lastMessage: 1,
                     lastMessageOn: 1,
+                    shit: "$chatBlock",
                 },
             },
             { $sort: { lastMessageOn: -1 } },
@@ -1171,7 +1187,7 @@ export const deleteGroupChats = async (req: Request, res: Response) => {
 };
 
 // block
-export const blockUser = async (req: Request, res: Response) => {
+export const blockUnblockUser = async (req: Request, res: Response) => {
     const userId = req.params.userId as string;
 
     try {
@@ -1187,43 +1203,62 @@ export const blockUser = async (req: Request, res: Response) => {
                 noBlockedUsers: 1,
             });
         } else {
-            await ChatBlock.findOneAndUpdate(
+            await ChatBlock.updateOne(
                 {
                     userId: new mongoose.Types.ObjectId(req.userId),
                 },
-                {
-                    $push: { blockedUserIds: userId },
-                    $inc: { noBlockedUsers: +1 },
-                }
+                [
+                    {
+                        $set: {
+                            blockedUserIds: {
+                                $cond: {
+                                    if: {
+                                        $in: [
+                                            new mongoose.Types.ObjectId(userId),
+                                            "$blockedUserIds",
+                                        ],
+                                    },
+                                    then: {
+                                        $setDifference: [
+                                            "$blockedUserIds",
+                                            [
+                                                new mongoose.Types.ObjectId(
+                                                    userId
+                                                ),
+                                            ],
+                                        ],
+                                    },
+                                    else: {
+                                        $concatArrays: [
+                                            "$blockedUserIds",
+                                            [
+                                                new mongoose.Types.ObjectId(
+                                                    userId
+                                                ),
+                                            ],
+                                        ],
+                                    },
+                                },
+                            },
+                            noBlockedUsers: {
+                                $cond: {
+                                    if: {
+                                        $in: [
+                                            new mongoose.Types.ObjectId(userId),
+                                            "$blockedUserIds",
+                                        ],
+                                    },
+                                    then: { $subtract: ["$noBlockedUsers", 1] },
+                                    else: { $add: ["$noBlockedUsers", 1] },
+                                },
+                            },
+                        },
+                    },
+                ]
             );
         }
 
-        res.status(200).json({message: "blocked"});
-    } catch (error) {
-        console.log("error while blocking user", error);
-        res.status(500).json({ message: "Something went wrong" });
-    }
-};
-
-export const unblockUser = async (req: Request, res: Response) => {
-    const userId = req.params.userId as string;
-
-    try {
-        const blocked = await ChatBlock.findOneAndUpdate(
-            {
-                userId: new mongoose.Types.ObjectId(req.userId),
-            },
-            {
-                $pull: { blockedUserIds: userId },
-                $inc: { noBlockedUsers: -1 },
-            }
-        );
-
-        if (!blocked) {
-            return res.status(404).json({ message: "Blocked list not found" });
-        }
-
-        res.status(200).json({message: "unblocked"});
+        res.status(200).json({ message: "blocked" });
     } catch (error) {
         console.log("error while blocking user", error);
         res.status(500).json({ message: "Something went wrong" });
@@ -1241,12 +1276,12 @@ export const getBlockedList = async (req: Request, res: Response) => {
             {
                 $lookup: {
                     from: "UserAuth",
-                    let: { blockedList: "$blockedList" },
+                    let: { blockedUserIds: "$blockedUserIds" },
                     pipeline: [
                         {
                             $match: {
                                 $expr: {
-                                    $in: ["$_id", "$$blockedList"], // Reference the followings array from the outer document
+                                    $in: ["$_id", "$$blockedUserIds"], // Reference the followings array from the outer document
                                 },
                             },
                         },
@@ -1263,6 +1298,7 @@ export const getBlockedList = async (req: Request, res: Response) => {
                         },
                         {
                             $project: {
+                                userId: "$userData.userId",
                                 username: 1,
                                 name: "$userData.name",
                                 profilePictureUrl:
@@ -1270,18 +1306,13 @@ export const getBlockedList = async (req: Request, res: Response) => {
                             },
                         },
                     ],
-                    as: "UserAuthData",
+                    as: "userAuthData",
                 },
             },
             {
-                $unwind: "$userAuthData", // Unwind the array to access individual elements
-            },
-            {
                 $project: {
-                    userId: "$userAuthData._id",
-                    username: "$userAuthData.username",
-                    name: "$userAuthData.name",
-                    profilePictureUrl: "$userAuthData.profilePictureUrl",
+                    blockedUserList: "$userAuthData",
+                    noBlockedUsers: 1,
                 },
             },
             {
@@ -1292,9 +1323,13 @@ export const getBlockedList = async (req: Request, res: Response) => {
             },
         ]);
 
-        return res.status(200).json(blockedList);
+        if (blockedList.length > 0) {
+            res.status(200).json(blockedList[0]);
+        } else {
+            res.status(500).json({ message: "Something went wrong" });
+        }
     } catch (error) {
-        console.log("error while blocking user", error);
+        console.log("error while getting blocked user", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

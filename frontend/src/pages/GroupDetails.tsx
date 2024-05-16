@@ -147,7 +147,7 @@ const GroupDetails = () => {
 
     useEffect(() => {
         let timeoutId: number | undefined;
-        
+
         if (searchQuery.length >= 2) {
             timeoutId = setTimeout(
                 () =>
@@ -166,7 +166,7 @@ const GroupDetails = () => {
         };
     }, [searchQuery]);
 
-    // #rendegion
+    // #endregion
 
     return (
         // {pt-14 md:pt-0} <- for top nav bar in mobile screen
@@ -320,6 +320,10 @@ const GroupDetails = () => {
                                         }
                                         className="text-red-500"
                                         title="Remove Member"
+                                        disabled={
+                                            isRemovingMember ===
+                                            data.userId.toString()
+                                        }
                                     >
                                         {isRemovingMember ===
                                         data.userId.toString() ? (

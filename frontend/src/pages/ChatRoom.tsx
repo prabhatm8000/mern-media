@@ -22,8 +22,8 @@ import { useAppContext } from "../contexts/AppContext";
 import { useChatsContext } from "../contexts/ChatsContext";
 import { useMessageContext } from "../contexts/MessageContext";
 import { useSocketContext } from "../contexts/SocketContext";
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 import { compressImages } from "../lib/compressImages";
+import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 
 const CHAT_LIMIT = 12;
 const MAX_ATTACHMENT_LIMIT = 5;
@@ -303,9 +303,9 @@ const ChatRoom = () => {
 
     // block user
     const { isFetching: isBlockingChat, refetch: blockUser } = useQuery(
-        "blockUser",
+        "blockuser",
         () => {
-            apiClient.blockUser(chatData?.userData.userId as string);
+            apiClient.blockUnblockUser(chatData?.userData.userId as string);
         },
         {
             enabled: false,

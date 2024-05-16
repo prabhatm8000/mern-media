@@ -173,7 +173,6 @@ const Search = () => {
             </div>
 
             {/* SearchResults */}
-
             <div className="flex flex-col overflow-y-auto overflow-x-hidden items-center gap-3 rounded-lg border border-whiteAlpha2 p-4">
                 {searchResults.length > 0 &&
                     searchResults.map((searchResult, i) => {

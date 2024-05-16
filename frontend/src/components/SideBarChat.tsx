@@ -194,7 +194,7 @@ const SideBarChat = () => {
                     <Link
                         className="text-5xl text-white font-bloodySunday"
                         to={"/home"}
-                        >
+                    >
                         MernMedia
                     </Link>
                     <Link
@@ -268,6 +268,9 @@ const SideBarChat = () => {
                         );
                     })}
                     {(loadingChats || searchingChats) && <ChatCardLoading />}
+                    {(loadingChats || searchingChats) && chats.length === 0 && (
+                        <div className="text-whiteAlpha1">No Chats</div>
+                    )}
                 </div>
             )}
 
@@ -294,6 +297,10 @@ const SideBarChat = () => {
                     {(loadingGroupChats || searchingGroupChats) && (
                         <ChatCardLoading />
                     )}
+                    {(loadingGroupChats || searchingGroupChats) &&
+                        groupChats.length === 0 && (
+                            <div className="text-whiteAlpha1">No Group Chats</div>
+                        )}
                 </div>
             )}
 

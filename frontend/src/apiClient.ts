@@ -87,7 +87,7 @@ export const validateToken = async (): Promise<ValidateTokenResult> => {
 // #endregion
 
 // userdata
-// #region 
+// #region
 export const fetchUserDataById = async (
     userId: string
 ): Promise<UserDataType> => {
@@ -171,7 +171,7 @@ export const searchUser = async (
 };
 // #endregion
 
-// follow 
+// follow
 // #region
 export const doIFollow = async (
     userId: string
@@ -876,11 +876,14 @@ export const removeMemberFromGroup = async (userId: string, chatId: string) => {
     }
 };
 
-export const blockUser = async (userId: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/chat/block/${userId}`, {
-        method: "PATCH",
-        credentials: "include",
-    });
+export const blockUnblockUser = async (userId: string) => {
+    const response = await fetch(
+        `${API_BASE_URL}/api/chat/block-unblock/${userId}`,
+        {
+            method: "PATCH",
+            credentials: "include",
+        }
+    );
 
     if (!response.ok) {
         const error = await response.json();
@@ -907,7 +910,7 @@ export const unblockUser = async (userId: string) => {
 export const getBlockedList = async (
     page: number,
     limit: number
-): Promise<MessageType[]> => {
+): Promise<{ noBlockedUsers: number; blockedUserList: UserDataBasicType[] }> => {
     const response = await fetch(
         `${API_BASE_URL}/api/chat/get-blocked-list?page=${page}&limit=${limit}`,
         {
