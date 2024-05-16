@@ -21,12 +21,16 @@ const Login = () => {
         register,
         handleSubmit,
         formState: { errors },
-        watch
+        watch,
+        setValue,
     } = useForm<LoginFormData>();
 
     const { mutate, isLoading } = useMutation(apiClient.login, {
         onSuccess: async () => {
-            showToast({ message: `Login successfull! Hello, ${watch("username")} 👋🏽`, type: "SUCCESS" });
+            showToast({
+                message: `Login successfull! Hello, ${watch("username")} 👋🏽`,
+                type: "SUCCESS",
+            });
             await queryClient.invalidateQueries("validateToken");
 
             // got request for login from other locations (like from, login to book)
@@ -46,7 +50,7 @@ const Login = () => {
     return (
         <div className="flex justify-center items-center h-screen select-none">
             <form
-                className="max-w-[300px] h-fit px-10 py-8 rounded border border-whiteAlpha2 shadow-lg hover:shadow-black2 transition-shadow delay-75 duration-500"
+                className="max-w-[320px] h-fit px-10 py-8 rounded border border-whiteAlpha2 shadow-lg hover:shadow-black2 transition-shadow delay-75 duration-500"
                 onSubmit={onSubmit}
                 autoComplete="off"
             >
@@ -65,7 +69,18 @@ const Login = () => {
                         type="text"
                         {...register("username", {
                             required: "Username is required",
+                            pattern: {
+                                value: /^\S*$/,
+                                message: "Whitespace is not allowed",
+                            },
                         })}
+                        onBlur={(e) => {
+                            // Trim whitespace on blur
+                            const trimmedValue = e.target.value.trim();
+                            setValue("username", trimmedValue, {
+                                shouldValidate: true,
+                            });
+                        }}
                     />
                     {errors.username && (
                         <span className="text-red-500 text-sm">
@@ -112,9 +127,9 @@ const Login = () => {
                 </button>
 
                 <div className="mb-6 text-sm text-center">
-                    Don't have an Account?
-                    <Link to={"/sign-in"} className="underline text-blue-300">
-                        create
+                    {"Don't have an Account? "}
+                    <Link to={"/sign-in"} className="text-blue-300">
+                        Sign up
                     </Link>
                 </div>
 

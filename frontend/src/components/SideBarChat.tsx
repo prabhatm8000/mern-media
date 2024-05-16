@@ -8,6 +8,7 @@ import { useGroupChatsContext } from "../contexts/GroupChatsContext";
 import ChatCard from "./ChatCard";
 import GroupChatCard from "./GroupChatCard";
 import { AiOutlineClose } from "react-icons/ai";
+import { ImBlocked } from "react-icons/im";
 import ChatCardLoading from "./skeletonLoadings/ChatCardLoading";
 
 const LIMIT = 7;
@@ -189,8 +190,20 @@ const SideBarChat = () => {
         <div className="relative grid grid-rows-[130px_1fr] gap-3 pt-6 bg-black border-e border-whiteAlpha2 h-screen overflow-hidden">
             {/* chats: header */}
             <div className="flex items-start flex-col justify-start gap-3">
-                <div className="text-5xl text-white px-3 font-bloodySunday">
-                    <Link to={"/home"}>MernMedia</Link>
+                <div className="flex items-center justify-between w-full px-3">
+                    <Link
+                        className="text-5xl text-white font-bloodySunday"
+                        to={"/home"}
+                        >
+                        MernMedia
+                    </Link>
+                    <Link
+                        to={"/chats/block-list"}
+                        className="focus:outline-none p-2 rounded-full text-whiteAlpha1 hover:text-red-800 hover:bg-black2 transition-colors duration-300 ease-in"
+                        title="Block list"
+                    >
+                        <ImBlocked className="size-6" />
+                    </Link>
                 </div>
                 <div className="flex justify-between bg-black2 mx-3 w-[calc(100%-24px)] px-4 py-2 rounded-full">
                     <input
@@ -201,14 +214,14 @@ const SideBarChat = () => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         value={searchQuery}
                     />
-                    {searchQuery.length !== 0 && 
-                    <button
-                    className="focus:outline-none"
-                    onClick={() => setSearchQuery("")}
-                    >
-                        <AiOutlineClose className="size-6 text-white3" />
-                    </button>
-                    }
+                    {searchQuery.length !== 0 && (
+                        <button
+                            className="focus:outline-none"
+                            onClick={() => setSearchQuery("")}
+                        >
+                            <AiOutlineClose className="size-6 text-white3" />
+                        </button>
+                    )}
                 </div>
                 <div className="flex justify-around items-center gap-0 w-full ">
                     <button

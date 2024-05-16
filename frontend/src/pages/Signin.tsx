@@ -21,6 +21,7 @@ const Signin = () => {
         register,
         watch,
         handleSubmit,
+        setValue,
         formState: { errors },
     } = useForm<SigninFormDataType>();
 
@@ -47,7 +48,7 @@ const Signin = () => {
     return (
         <div className="flex justify-center items-center h-screen select-none">
             <form
-                className="max-w-[300px] h-fit px-10 py-8 rounded border border-whiteAlpha2 shadow-lg hover:shadow-black2 transition-shadow delay-75 duration-500"
+                className="max-w-[320px] h-fit px-10 py-8 rounded border border-whiteAlpha2 shadow-lg hover:shadow-black2 transition-shadow delay-75 duration-500"
                 onSubmit={onSubmit}
                 autoComplete="off"
             >
@@ -66,7 +67,18 @@ const Signin = () => {
                         type="text"
                         {...register("username", {
                             required: "This field is required",
+                            pattern: {
+                                value: /^\S*$/,
+                                message: "Whitespace is not allowed",
+                            },
                         })}
+                        onBlur={(e) => {
+                            // Trim whitespace on blur
+                            const trimmedValue = e.target.value.trim();
+                            setValue("username", trimmedValue, {
+                                shouldValidate: true,
+                            });
+                        }}
                     />
                     {errors.username && (
                         <span className="text-red-500 text-sm">
@@ -138,9 +150,9 @@ const Signin = () => {
                 </button>
 
                 <div className="text-sm text-center mb-6">
-                    Already have an Account?
+                    {"Have an account? "}
                     <Link to={"/"} className="underline text-blue-300">
-                        login
+                        Login
                     </Link>
                 </div>
 

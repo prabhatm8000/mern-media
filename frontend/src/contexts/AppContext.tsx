@@ -28,18 +28,22 @@ export const AppContextProvider = ({
     children: React.ReactNode;
 }) => {
     const [toast, setToast] = useState<ToastMessage | undefined>(undefined);
-    const [connectSocket, setConnectSocket] = useState<boolean>(true);
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+    const [connectSocket, setConnectSocket] = useState<boolean>(false);
 
-    const { data, isError } = useQuery(
+    const { data } = useQuery(
         "validateToken",
         apiClient.validateToken,
         {
             retry: false,
+            refetchOnWindowFocus: true,
             onError: () => {
-                setConnectSocket(true);
+                setConnectSocket(false);
+                setIsLoggedIn(false)
             },
             onSuccess: () => {
-                setConnectSocket(false);
+                setConnectSocket(true);
+                setIsLoggedIn(true)
             },
         }
     );
@@ -47,7 +51,7 @@ export const AppContextProvider = ({
     const socket = useSocketContext();
 
     useEffect(() => {
-        if (!connectSocket) {
+        if (connectSocket) {
             socket.connect();
         }
     }, [connectSocket]);
@@ -58,7 +62,7 @@ export const AppContextProvider = ({
                 showToast: (toastMessage) => {
                     setToast(toastMessage);
                 },
-                isLoggedIn: !isError,
+                isLoggedIn: isLoggedIn,
                 currUserId: data?.userId,
             }}
         >

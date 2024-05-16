@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Chat from "../models/chat";
+import ChatBlock from "../models/chatBlock";
 import Message from "../models/message";
 import UserAuth from "../models/userAuth";
 import UserData from "../models/userData";
@@ -11,7 +12,7 @@ import {
     uploadAttachmentImages,
     uploadProfilePicture,
 } from "../utils/cloudinary";
-import { membersInChat, userExistInChat } from "../utils/helperDbOperations";
+import { userExistInChat } from "../utils/helperDbOperations";
 
 export const createChat = async (req: Request, res: Response) => {
     try {
@@ -1165,6 +1166,135 @@ export const deleteGroupChats = async (req: Request, res: Response) => {
         res.status(200).json();
     } catch (error) {
         console.log("error while deleting group chats", error);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
+// block
+export const blockUser = async (req: Request, res: Response) => {
+    const userId = req.params.userId as string;
+
+    try {
+        const blocked = await ChatBlock.findOne({
+            userId: new mongoose.Types.ObjectId(req.userId),
+        });
+
+        if (!blocked) {
+            // create if not found
+            await ChatBlock.create({
+                userId: new mongoose.Types.ObjectId(req.userId),
+                blockedUserIds: [userId],
+                noBlockedUsers: 1,
+            });
+        } else {
+            await ChatBlock.findOneAndUpdate(
+                {
+                    userId: new mongoose.Types.ObjectId(req.userId),
+                },
+                {
+                    $push: { blockedUserIds: userId },
+                    $inc: { noBlockedUsers: +1 },
+                }
+            );
+        }
+
+        res.status(200).json({message: "blocked"});
+    } catch (error) {
+        console.log("error while blocking user", error);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
+export const unblockUser = async (req: Request, res: Response) => {
+    const userId = req.params.userId as string;
+
+    try {
+        const blocked = await ChatBlock.findOneAndUpdate(
+            {
+                userId: new mongoose.Types.ObjectId(req.userId),
+            },
+            {
+                $pull: { blockedUserIds: userId },
+                $inc: { noBlockedUsers: -1 },
+            }
+        );
+
+        if (!blocked) {
+            return res.status(404).json({ message: "Blocked list not found" });
+        }
+
+        res.status(200).json({message: "unblocked"});
+    } catch (error) {
+        console.log("error while blocking user", error);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
+export const getBlockedList = async (req: Request, res: Response) => {
+    const limit = parseInt(req.query.limit ? req.query.limit.toString() : "5");
+    const page = parseInt(req.query.page ? req.query.page.toString() : "0");
+    const skip = (page - 1) * limit;
+
+    try {
+        const blockedList = await ChatBlock.aggregate([
+            { $match: { userId: new mongoose.Types.ObjectId(req.userId) } },
+            {
+                $lookup: {
+                    from: "UserAuth",
+                    let: { blockedList: "$blockedList" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $in: ["$_id", "$$blockedList"], // Reference the followings array from the outer document
+                                },
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: "UserData",
+                                localField: "_id",
+                                foreignField: "userId",
+                                as: "userData",
+                            },
+                        },
+                        {
+                            $unwind: "$userData", // Unwind the array to access individual elements
+                        },
+                        {
+                            $project: {
+                                username: 1,
+                                name: "$userData.name",
+                                profilePictureUrl:
+                                    "$userData.profilePictureUrl",
+                            },
+                        },
+                    ],
+                    as: "UserAuthData",
+                },
+            },
+            {
+                $unwind: "$userAuthData", // Unwind the array to access individual elements
+            },
+            {
+                $project: {
+                    userId: "$userAuthData._id",
+                    username: "$userAuthData.username",
+                    name: "$userAuthData.name",
+                    profilePictureUrl: "$userAuthData.profilePictureUrl",
+                },
+            },
+            {
+                $skip: skip,
+            },
+            {
+                $limit: limit,
+            },
+        ]);
+
+        return res.status(200).json(blockedList);
+    } catch (error) {
+        console.log("error while blocking user", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

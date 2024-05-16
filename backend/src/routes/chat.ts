@@ -2,10 +2,12 @@ import express from "express";
 import multer from "multer";
 import {
     addMembers,
+    blockUser,
     createChat,
     deleteChat,
     deleteGroupChats,
     editGroupChats,
+    getBlockedList,
     getChatData,
     getChats,
     getGroupChats,
@@ -17,7 +19,9 @@ import {
     searchChat,
     searchGroupChat,
     searchMember,
-    uploadAttachments,
+    unblockUser,
+
+    uploadAttachments
 } from "../controllers/chat";
 import verifyToken from "../middleware/userAuth";
 
@@ -72,7 +76,12 @@ chat.get("/search-member/:chatId", searchMember);
 
 chat.delete("/delete-group-chat/:chatId", deleteGroupChats);
 
-// todo: block users
+// block users
+chat.patch("/block/:userId", blockUser);
+
+chat.patch("/unblock/:userId", unblockUser);
+
+chat.get("/get-blocked-list", getBlockedList);
 
 // messages
 chat.get("/get-messages", getMessages);

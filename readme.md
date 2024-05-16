@@ -1,4 +1,4 @@
-MernMedia is a basic social media web app.
+MernMedia is a social media web application built using the MERN stack (MongoDB, Express.js, React, and Node.js) and Socket.io
 
 Demo
 [Click here](https://mern-media-vyah.onrender.com/)
@@ -13,12 +13,16 @@ Demo
 - Tailwind CSS
 - Cloudinary (Cloud storage for media)
 - MongoDB Atlas (Cloud NoSQL Database)
+- Socket.io (Real time chatting)
 
 ## Features:
-- User authentication with JWT (JSON Web Token)
-- Edit your profile (add profile picture, description and links)
+- Secure JWT-based (JSON Web Token) user authentication
+- Customize your profile (add profile picture, description and links)
 - Search and view profile
-- Posts
+- Share posts with ease
 - Likes and comments
 - See all the posts from people you follow
-- Notification (about likes, comments and follow actions)
+- Enjoy real-time individual and group chats
+- Notifications about likes, comments, and follows
+
+MernMedia is a social media web application, offering secure JWT-based user authentication. Customize your profile, connect with others, and share posts with ease. Enjoy real-time individual and group chats, stay updated with notifications about likes, comments, and follows, and explore profiles with our search functionality. 

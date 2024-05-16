@@ -271,7 +271,7 @@ const GroupChatRoom = () => {
     const { isFetching: isDeletingChat, refetch: deleteChat } = useQuery(
         "deletingChat",
         () => {
-            apiClient.deleteChat(chatId as string);
+            apiClient.deleteGroupChat(chatId as string);
         },
         {
             enabled: false,
@@ -334,11 +334,11 @@ const GroupChatRoom = () => {
 
     return (
         <div
-            className={`grid grid-rows-[${
+            className={`grid ${
                 imageDataUrls.length > 0
-                    ? "70px_calc(100vh-70px-126px-16px)_126px"
-                    : "70px_calc(100vh-70px-60px-16px)_60px"
-            }] gap-2 h-screen`}
+                    ? "grid-rows-[70px_calc(100vh-70px-126px-16px)_126px]"
+                    : "grid-rows-[70px_calc(100vh-70px-60px-16px)_60px]"
+            } gap-2 h-screen`}
         >
             {/* header */}
             <div className="relative flex justify-start items-center gap-3 pb-2 border-b border-whiteAlpha2">
@@ -452,7 +452,7 @@ const GroupChatRoom = () => {
             </div>
 
             {/* messages */}
-            <div className="flex flex-col-reverse gap-2 overflow-y-auto px-2">
+            <div className="flex flex-col-reverse gap-2 overflow-y-auto px-2 h-full">
                 {messages?.map((data, index) => {
                     if (index === messages.length - 1) {
                         return (

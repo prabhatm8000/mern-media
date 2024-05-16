@@ -11,6 +11,7 @@ import { SearchResultContextProvider } from "./contexts/SearchContext.tsx";
 import "react-loading-skeleton/dist/skeleton.css";
 import { ChatsContextProvider } from "./contexts/ChatsContext.tsx";
 import { GroupChatsContextProvider } from "./contexts/GroupChatsContext.tsx";
+import { SkeletonTheme } from "react-loading-skeleton";
 
 // by default Query client will fetch and retry multiple time,
 // if got an error
@@ -31,7 +32,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                         <MessageContextProvider>
                             <ChatsContextProvider>
                                 <GroupChatsContextProvider>
-                                    <App />
+                                    <SkeletonTheme
+                                        baseColor="#1a1a1a"
+                                        highlightColor="#3b82f62f"
+                                    >
+                                        <App />
+                                    </SkeletonTheme>
                                 </GroupChatsContextProvider>
                             </ChatsContextProvider>
                         </MessageContextProvider>

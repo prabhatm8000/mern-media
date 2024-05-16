@@ -18,6 +18,8 @@ import { PostCommentFormType } from "./components/CommentBox";
 // env variable for vite react
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
+// auth
+// #region
 export const signin = async (formData: SigninFormDataType) => {
     const response = await fetch(`${API_BASE_URL}/api/auth/sign-in`, {
         method: "POST",
@@ -82,7 +84,10 @@ export const validateToken = async (): Promise<ValidateTokenResult> => {
 
     return await response.json();
 };
+// #endregion
 
+// userdata
+// #region 
 export const fetchUserDataById = async (
     userId: string
 ): Promise<UserDataType> => {
@@ -119,7 +124,10 @@ export const editUserData = async (formData: FormData) => {
         throw new Error("Something went wrong while updating profile!");
     }
 };
+// #endregion
 
+// search user
+// #region
 export const searchAutoComplete = async (
     searchQuery: string
 ): Promise<{ username: string }[]> => {
@@ -161,7 +169,10 @@ export const searchUser = async (
 
     return await response.json();
 };
+// #endregion
 
+// follow 
+// #region
 export const doIFollow = async (
     userId: string
 ): Promise<{ doIFollow: boolean }> => {
@@ -225,7 +236,7 @@ export const searchFollower = async (
     page: number,
     limit: number,
     userId: string,
-    query: string,
+    query: string
 ): Promise<UserDataBasicType[]> => {
     const response = await fetch(
         `${API_BASE_URL}/api/follow/search-follower?query=${query}&userId=${userId}&page=${page}&limit=${limit}`,
@@ -270,7 +281,7 @@ export const searchFollowing = async (
     page: number,
     limit: number,
     userId: string,
-    query: string,
+    query: string
 ): Promise<UserDataBasicType[]> => {
     const response = await fetch(
         `${API_BASE_URL}/api/follow/search-following?query=${query}&userId=${userId}&page=${page}&limit=${limit}`,
@@ -288,7 +299,10 @@ export const searchFollowing = async (
 
     return await response.json();
 };
+// #endregion
 
+// post
+// #region
 export const addPost = async (postFormData: FormData) => {
     const response = await fetch(`${API_BASE_URL}/api/post/add`, {
         method: "POST",
@@ -484,7 +498,10 @@ export const deleteComment = async (commentId: string) => {
 
     return await response.json();
 };
+// #endregion
 
+// notofications
+// #region
 export const fetchDoIHaveNotifications = async (): Promise<{
     response: {
         doIHaveNotifications: boolean;
@@ -544,7 +561,10 @@ export const clearNotifications = async () => {
 
     return await response.json();
 };
+// #endregion
 
+// chats
+// #region
 export const createChat = async (
     members: string[],
     name?: string
@@ -575,6 +595,26 @@ export const createChat = async (
 export const deleteChat = async (chatId: string) => {
     const response = await fetch(
         `${API_BASE_URL}/api/chat/delete-chat/${chatId}`,
+        {
+            method: "DELETE",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        if (error.message) throw new Error(error.message);
+
+        throw new Error("Something went wrong");
+    }
+};
+
+export const deleteGroupChat = async (chatId: string) => {
+    const response = await fetch(
+        `${API_BASE_URL}/api/chat/delete-group-chat/${chatId}`,
         {
             method: "DELETE",
             credentials: "include",
@@ -836,6 +876,55 @@ export const removeMemberFromGroup = async (userId: string, chatId: string) => {
     }
 };
 
+export const blockUser = async (userId: string) => {
+    const response = await fetch(`${API_BASE_URL}/api/chat/block/${userId}`, {
+        method: "PATCH",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        if (error.message) throw new Error(error.message);
+
+        throw new Error("Something went wrong");
+    }
+};
+
+export const unblockUser = async (userId: string) => {
+    const response = await fetch(`${API_BASE_URL}/api/chat/unblock/${userId}`, {
+        method: "PATCH",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        if (error.message) throw new Error(error.message);
+
+        throw new Error("Something went wrong");
+    }
+};
+
+export const getBlockedList = async (
+    page: number,
+    limit: number
+): Promise<MessageType[]> => {
+    const response = await fetch(
+        `${API_BASE_URL}/api/chat/get-blocked-list?page=${page}&limit=${limit}`,
+        {
+            credentials: "include",
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        if (error.message) throw new Error(error.message);
+
+        throw new Error("Something went wrong");
+    }
+
+    return await response.json();
+};
+
 export const fetchPrevMessages = async (
     chatId: string,
     skip: number,
@@ -880,3 +969,4 @@ export const uploadAttachments = async (
 
     return await response.json();
 };
+// #endregion

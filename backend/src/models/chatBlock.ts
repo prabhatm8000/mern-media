@@ -11,6 +11,9 @@ const chatBlockSchema = new mongoose.Schema(
         blockedUserIds: {
             type: [{ type: mongoose.Schema.Types.ObjectId, ref: "UserAuth" }],
         },
+        noBlockedUsers: {
+            type: Number,
+        },
     },
     { collection: "ChatBlock" }
 );

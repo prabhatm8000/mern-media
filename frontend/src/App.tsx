@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { SkeletonTheme } from "react-loading-skeleton";
+import { Suspense, useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import {
     ChatBasicDataType,
@@ -10,6 +9,7 @@ import { useAppContext } from "./contexts/AppContext";
 import { useChatsContext } from "./contexts/ChatsContext";
 import { FollowersContextProvider } from "./contexts/FollowersContext";
 import { FollowingsContextProvider } from "./contexts/FollowingsContext";
+import { useGroupChatsContext } from "./contexts/GroupChatsContext";
 import { useMessageContext } from "./contexts/MessageContext";
 import { useSocketContext } from "./contexts/SocketContext";
 import ColumnLayout from "./layouts/ColumnLayout";
@@ -21,7 +21,6 @@ import Signin from "./pages/Signin";
 import ChatRoutes from "./routes/ChatRoutes";
 import PostRoutes from "./routes/PostRoutes";
 import SearchRoutes from "./routes/SearchRoutes";
-import { useGroupChatsContext } from "./contexts/GroupChatsContext";
 
 function App() {
     const { isLoggedIn, currUserId } = useAppContext();
@@ -34,13 +33,13 @@ function App() {
     // handling tab close
     useEffect(() => {
         if (!currUserId) {
-            return
+            return;
         }
 
         function handleTabClose() {
             return socket.emit("leave");
         }
-        
+
         window.addEventListener("beforeunload", handleTabClose);
 
         socket.on("message", (message: MessageType) => {
@@ -126,77 +125,72 @@ function App() {
     }, [socket, currUserId]);
 
     return (
-        <SkeletonTheme baseColor="#1a1a1a" highlightColor="#3b82f62f">
-            <div className="bg-black text-white font-poppins-light h-screen">
-                <div className="container max-w-[1200px] mx-auto">
-                    <BrowserRouter>
-                        <Routes>
-                            {isLoggedIn ? (
-                                <>
-                                    <Route
-                                        path="/"
-                                        element={
-                                            <ColumnLayout>
-                                                <Home />
-                                            </ColumnLayout>
-                                        }
-                                    />
-                                    <Route
-                                        path="/edit-profile"
-                                        element={
-                                            <ColumnLayout>
-                                                <EditUserData />
-                                            </ColumnLayout>
-                                        }
-                                    />
-                                    <Route
-                                        path="/profile/:userId"
-                                        element={
-                                            <FollowersContextProvider>
-                                                <FollowingsContextProvider>
-                                                    <ColumnLayout>
-                                                        <Profile />
-                                                    </ColumnLayout>
-                                                </FollowingsContextProvider>
-                                            </FollowersContextProvider>
-                                        }
-                                    />
+        <div className="bg-black text-white font-poppins-light h-screen">
+            <div className="container max-w-[1200px] mx-auto">
+                <BrowserRouter>
+                    <Routes>
+                        {isLoggedIn ? (
+                            <>
+                                <Route
+                                    path="/"
+                                    element={
+                                        <ColumnLayout>
+                                            <Home />
+                                        </ColumnLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/edit-profile"
+                                    element={
+                                        <ColumnLayout>
+                                            <EditUserData />
+                                        </ColumnLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/profile/:userId"
+                                    element={
+                                        <FollowersContextProvider>
+                                            <FollowingsContextProvider>
+                                                <ColumnLayout>
+                                                    <Profile />
+                                                </ColumnLayout>
+                                            </FollowingsContextProvider>
+                                        </FollowersContextProvider>
+                                    }
+                                />
 
-                                    <Route
-                                        path="/search/*"
-                                        element={
-                                            <ColumnLayout>
-                                                <SearchRoutes />
-                                            </ColumnLayout>
-                                        }
-                                    />
+                                <Route
+                                    path="/search/*"
+                                    element={
+                                        <ColumnLayout>
+                                            <SearchRoutes />
+                                        </ColumnLayout>
+                                    }
+                                />
 
-                                    <Route
-                                        path="/post/*"
-                                        element={<PostRoutes />}
-                                    />
+                                <Route
+                                    path="/post/*"
+                                    element={<PostRoutes />}
+                                />
 
-                                    <Route
-                                        path="/chats/*"
-                                        element={<ChatRoutes />}
-                                    />
-                                </>
-                            ) : (
-                                <>
-                                    <Route path="/" element={<Login />} />
-                                    <Route
-                                        path="/sign-in"
-                                        element={<Signin />}
-                                    />
-                                </>
-                            )}
+                                <Route
+                                    path="/chats/*"
+                                    element={<ChatRoutes />}
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <Route path="/" element={<Login />} />
+                                <Route path="/sign-in" element={<Signin />} />
+                            </>
+                        )}
 
-                            <Route path="*" element={<Navigate to={"/"} />} />
-                        </Routes>
-                    </BrowserRouter>
-                </div>
+                        <Route path="*" element={<Navigate to={"/"} />} />
+                    </Routes>
+                </BrowserRouter>
             </div>
-        </SkeletonTheme>
+        </div>
     );
 }
 

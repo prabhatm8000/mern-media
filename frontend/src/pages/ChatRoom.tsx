@@ -80,12 +80,19 @@ const ChatRoom = () => {
     const [chatData, setChatData] = useState<ChatBasicDataType>();
 
     useEffect(() => {
+        let flag = false;
+
         chatState.forEach((data) => {
             if (data._id.toString() === chatId) {
                 setChatData(data);
+                flag = true;
                 return;
             }
         });
+
+        if (!flag) {
+            navigation("/chats");
+        }
     }, [chatId]);
 
     // prev messages
@@ -294,13 +301,52 @@ const ChatRoom = () => {
         deleteChat();
     };
 
+    // block user
+    const { isFetching: isBlockingChat, refetch: blockUser } = useQuery(
+        "blockUser",
+        () => {
+            apiClient.blockUser(chatData?.userData.userId as string);
+        },
+        {
+            enabled: false,
+            refetchOnWindowFocus: false,
+            onSuccess: () => {
+                showToast({
+                    type: "SUCCESS",
+                    message: `${chatData?.userData.username} Blocked!`,
+                });
+
+                navigation("/chats");
+
+                chatsDispatch({
+                    type: "DELETE_CHAT",
+                    payload: {
+                        chatId: chatId as string,
+                    },
+                });
+
+                messageDispatch({
+                    type: "DELETE_CHAT_ID",
+                    payload: { chatId: chatId as string },
+                });
+            },
+            onError: (error: Error) => {
+                showToast({ type: "ERROR", message: error.message });
+            },
+        }
+    );
+
+    const handleBlockUserBtn = () => {
+        blockUser();
+    };
+
     return (
         <div
-            className={`grid grid-rows-[${
+            className={`grid ${
                 imageDataUrls.length > 0
-                    ? "70px_calc(100vh-70px-126px-16px)_126px"
-                    : "70px_calc(100vh-70px-60px-16px)_60px"
-            }] gap-2 h-screen`}
+                    ? "grid-rows-[70px_calc(100vh-70px-126px-16px)_126px]"
+                    : "grid-rows-[70px_calc(100vh-70px-60px-16px)_60px]"
+            } gap-2 h-screen`}
         >
             {/* header */}
             <div className="relative flex justify-start items-center gap-3 pb-2 border-b border-whiteAlpha2">
@@ -382,7 +428,11 @@ const ChatRoom = () => {
                         )}
                         <span>Delete Chat</span>
                     </button>
-                    <button className="flex items-center gap-2.5 text-red-500">
+                    <button
+                        className="flex items-center gap-2.5 text-red-500"
+                        onClick={handleBlockUserBtn}
+                        disabled={isBlockingChat}
+                    >
                         <ImBlocked className="size-6" />
                         <span>Block User</span>
                     </button>

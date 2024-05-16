@@ -71,9 +71,6 @@ app.use(cookieParser());
 io.use(verifySocketToken);
 setUpSocket(io);
 
-// serving frontend
-// app.use(express.static(path.join(__dirname, "../../frontend/dist")));
-
 // routes
 app.use("/api/auth", userAuth);
 app.use("/api/userdata", userData);
@@ -84,8 +81,15 @@ app.use("/api/post-comment", postComment);
 app.use("/api/notifications", notifications);
 app.use("/api/chat", chat);
 
-app.get("/", async (req: Request, res: Response) => {
+app.get("/api/test", async (req: Request, res: Response) => {
     res.status(200).json({ message: "working" });
+});
+
+// serving frontend
+app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../frontend/dist", "index.html"));
 });
 
 server.listen(PORT, "0.0.0.0", () => {

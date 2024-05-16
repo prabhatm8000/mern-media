@@ -19,6 +19,7 @@ const MessageBubble = ({ data }: { data: MessageType }) => {
                     onClose={handleCloseShowInFullScreen}
                 />
             )}
+            
             <div
                 className={`flex items-center ${
                     currUserId === data.sender.toString()
@@ -33,7 +34,7 @@ const MessageBubble = ({ data }: { data: MessageType }) => {
                             : "text-start bg-black2 rounded-bl-none"
                     } `}
                 >
-                    {data.attachments && (
+                    {data.attachments && data.attachments.length > 0 && (
                         <div className="flex flex-col gap-3 my-2">
                             {data.attachments.map((imageUrl, index) => {
                                 return (

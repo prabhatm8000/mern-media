@@ -134,7 +134,7 @@ const AddPost = () => {
     }, [watch("imageFiles")]);
     // #endregion
     return (
-        <div className="pt-16 md:pt-0 flex justify-center py-2 md:py-4 h-screen select-none overflow-hidden">
+        <div className="pt-16 md:pt-4 flex justify-center py-2 md:py-4 h-screen select-none overflow-hidden">
             <form
                 className="max-w-[600px] w-[calc(100%-20px)] h-fit max-h-[calc(100%-40px)] p-6 flex flex-col gap-3 rounded-lg border border-whiteAlpha2 overflow-y-auto"
                 onSubmit={handleSubmit(onSubmit)}
