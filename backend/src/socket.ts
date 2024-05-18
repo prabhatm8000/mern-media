@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import {
     addMessageToDb,
     allMessagesRead,
+    isSenderBlocked,
     membersInChat,
     userExistInChat,
 } from "./utils/helperDbOperations";
@@ -121,6 +122,18 @@ const messageEvents = (socket: CtkSocket) => {
                 return;
             }
 
+            const members = await membersInChat(chatId.toString());
+
+            const isBlocked = await isSenderBlocked(
+                members,
+                socket.userId?.toString(),
+            );
+
+            if (isBlocked) {
+                socket.emit("error", { message: "Not allowed" });
+                return;
+            }
+
             const message = await addMessageToDb(
                 chatId.toString(),
                 socket.userId?.toString(),
@@ -128,8 +141,6 @@ const messageEvents = (socket: CtkSocket) => {
                 membersInRoom.size >= 2, // if more then sender(which is the receiver) is present, automark as read
                 attachments
             );
-
-            const members = await membersInChat(chatId.toString());
 
             const socketIdOfMembersConnected: string[] = [];
 
@@ -147,7 +158,6 @@ const messageEvents = (socket: CtkSocket) => {
                 return;
             }
 
-            IO.to(socketIdOfMembersConnected).emit("message", message);
             if (groupName !== undefined && groupPictureUrl !== undefined) {
                 IO.to(socketIdOfMembersConnected).emit("group-chat", {
                     _id: socket.chatId,
@@ -156,6 +166,8 @@ const messageEvents = (socket: CtkSocket) => {
                     name: groupName,
                     groupPictureUrl,
                 });
+
+                IO.to(socketIdOfMembersConnected).emit("message", message);
             } else {
                 IO.to(socketIdOfMembersConnected).emit("chat", {
                     _id: socket.chatId,
@@ -163,6 +175,7 @@ const messageEvents = (socket: CtkSocket) => {
                     lastMessage: message?.content,
                     lastMessageOn: message?.sentAt,
                 });
+                IO.to(socketIdOfMembersConnected).emit("message", message);
             }
         }
     );

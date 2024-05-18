@@ -250,6 +250,18 @@ export const getChats = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     try {
+        const haveChatBlock = await ChatBlock.findOne({
+            userId: new mongoose.Types.ObjectId(req.userId),
+        });
+
+        if (!haveChatBlock) {
+            await ChatBlock.create({
+                userId: new mongoose.Types.ObjectId(req.userId),
+                blockedUserIds: [],
+                noBlockedUsers: 0,
+            });
+        }
+
         const chats = await Chat.aggregate([
             {
                 $match: {
@@ -371,14 +383,23 @@ export const getChats = async (req: Request, res: Response) => {
                     "userAuthData._id": {
                         $ne: new mongoose.Types.ObjectId(req.userId),
                     },
-                    $expr: {
-                        $not: {
-                            $in: [
-                                "$userData.userId",
-                                "$chatBlock.blockedUserIds",
-                            ],
+                    $or: [
+                        {
+                            $expr: {
+                                $eq: ["$chatBlock", null],
+                            },
                         },
-                    },
+                        {
+                            $expr: {
+                                $not: {
+                                    $in: [
+                                        "$userData.userId",
+                                        "$chatBlock.blockedUserIds",
+                                    ],
+                                },
+                            },
+                        },
+                    ],
                 },
             },
             {
@@ -1401,9 +1422,7 @@ export const getMessages = async (req: Request, res: Response) => {
                         {
                             $match: {
                                 $expr: {
-                                    $and: [
-                                        { $eq: ["$_id", "$$chatId"] },
-                                    ],
+                                    $and: [{ $eq: ["$_id", "$$chatId"] }],
                                 },
                             },
                         },

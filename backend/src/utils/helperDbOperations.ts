@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Chat from "../models/chat";
+import ChatBlock from "../models/chatBlock";
 import Message from "../models/message";
 import UserData from "../models/userData";
 
@@ -83,7 +84,7 @@ export const addMessageToDb = async (
             readStatus: message.readStatus,
             sentAt: message.created_at,
             senderUserData: senderUserData[0],
-            attachments: message.attachments
+            attachments: message.attachments,
         };
 
         return res;
@@ -124,4 +125,35 @@ export const allMessagesRead = async (chatId: string, userId: string) => {
         },
         { readStatus: true }
     );
+};
+
+export const isSenderBlocked = async (members: string[], sender: string) => {
+    const userId = members[0] === sender ? members[1] : members[0];
+
+    const isBlockedUsers = await ChatBlock.aggregate([
+        {
+            $match: {
+                userId: new mongoose.Types.ObjectId(userId),
+                $expr: {
+                    $in: [
+                        new mongoose.Types.ObjectId(sender),
+                        "$blockedUserIds",
+                    ],
+                },
+            },
+        },
+        {
+            $addFields: {
+                result: true,
+            },
+        },
+        {
+            $project: {
+                result: 1,
+                _id: 0,
+            },
+        },
+    ]);
+
+    return isBlockedUsers.length > 0 && isBlockedUsers[0].result;
 };

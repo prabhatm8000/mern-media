@@ -10,12 +10,13 @@ import GroupChatCard from "./GroupChatCard";
 import { AiOutlineClose } from "react-icons/ai";
 import { ImBlocked } from "react-icons/im";
 import ChatCardLoading from "./skeletonLoadings/ChatCardLoading";
+import { SlOptions } from "react-icons/sl";
 
 const LIMIT = 7;
 
 const SideBarChat = () => {
     const [window, setWindow] = useState<"CHATS" | "GROUPS">("CHATS");
-
+    const [showOptions, setShowOptions] = useState<boolean>(false);
     const [searchQuery, setSearchQuery] = useState<string>("");
 
     // chats
@@ -189,7 +190,8 @@ const SideBarChat = () => {
     return (
         <div className="relative grid grid-rows-[130px_1fr] gap-3 pt-6 bg-black border-e border-whiteAlpha2 h-screen overflow-hidden">
             {/* chats: header */}
-            <div className="flex items-start flex-col justify-start gap-3">
+            <div className="flex items-start flex-col justify-start gap-3 relative">
+                {/* head */}
                 <div className="flex items-center justify-between w-full px-3">
                     <Link
                         className="text-5xl text-white font-bloodySunday"
@@ -197,14 +199,38 @@ const SideBarChat = () => {
                     >
                         MernMedia
                     </Link>
+                    <button
+                        className="focus:outline-none p-2 m-2"
+                        onClick={() => setShowOptions((prev) => !prev)}
+                    >
+                        {" "}
+                        {showOptions ? (
+                            <AiOutlineClose className="text-whiteAlpha1 size-4" />
+                        ) : (
+                            <SlOptions className="text-whiteAlpha1 size-4" />
+                        )}
+                    </button>
+                </div>
+
+                {/* options */}
+                <div
+                    className={`absolute z-20 p-2 m-3 right-4 top-7 ${
+                        showOptions
+                            ? "scale-100 translate-x-0 translate-y-0"
+                            : "scale-0 translate-x-[50%] translate-y-[-50%]"
+                    } transition-transform ease-in-out duration-300 bg-black1 flex flex-col justify-center items-start gap-3 rounded-md border border-whiteAlpha2`}
+                >
                     <Link
                         to={"/chats/block-list"}
-                        className="focus:outline-none p-2 rounded-full text-whiteAlpha1 hover:text-red-800 hover:bg-black2 transition-colors duration-300 ease-in"
-                        title="Block list"
+                        className="flex items-center gap-2.5 text-red-500"
+                        title="Blocked users"
                     >
                         <ImBlocked className="size-6" />
+                        <span>Blocked users</span>
                     </Link>
                 </div>
+
+                {/* search input */}
                 <div className="flex justify-between bg-black2 mx-3 w-[calc(100%-24px)] px-4 py-2 rounded-full">
                     <input
                         type="text"
@@ -223,6 +249,8 @@ const SideBarChat = () => {
                         </button>
                     )}
                 </div>
+
+                {/* tabs button */}
                 <div className="flex justify-around items-center gap-0 w-full ">
                     <button
                         onClick={() => setWindow("CHATS")}

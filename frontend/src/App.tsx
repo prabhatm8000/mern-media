@@ -35,7 +35,8 @@ const PostRoutes = lazy(() => import("./routes/PostRoutes"));
 const ChatRoutes = lazy(() => import("./routes/ChatRoutes"));
 
 function App() {
-    const { checkingAuthToken, isLoggedIn, currUserId } = useAppContext();
+    const { checkingAuthToken, isLoggedIn, currUserId, showToast } =
+        useAppContext();
     const socket = useSocketContext();
 
     const { dispatch: messageDispatch } = useMessageContext();
@@ -127,12 +128,17 @@ function App() {
             }
         );
 
+        socket.on("error", ({ message }: { message: string }) => {
+            showToast({ type: "ERROR", message });
+        });
+
         return () => {
             window.removeEventListener("beforeunload", handleTabClose);
             socket.off("message");
             socket.off("chat");
             socket.off("group-chat");
             socket.off("joined");
+            socket.off("error");
         };
     }, [socket, currUserId]);
 
