@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import {
     ChatBasicDataType,
@@ -12,18 +12,30 @@ import { FollowingsContextProvider } from "./contexts/FollowingsContext";
 import { useGroupChatsContext } from "./contexts/GroupChatsContext";
 import { useMessageContext } from "./contexts/MessageContext";
 import { useSocketContext } from "./contexts/SocketContext";
+
+import LoadingPage from "./pages/LoadingPage";
+
 import ColumnLayout from "./layouts/ColumnLayout";
-import EditUserData from "./pages/EditUserData";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Profile from "./pages/Profile";
-import Signin from "./pages/Signin";
-import ChatRoutes from "./routes/ChatRoutes";
-import PostRoutes from "./routes/PostRoutes";
-import SearchRoutes from "./routes/SearchRoutes";
+// import EditUserData from "./pages/EditUserData";
+// import Home from "./pages/Home";
+// import Login from "./pages/Login";
+// import Profile from "./pages/Profile";
+// import Signin from "./pages/Signin";
+// import ChatRoutes from "./routes/ChatRoutes";
+// import PostRoutes from "./routes/PostRoutes";
+// import SearchRoutes from "./routes/SearchRoutes";
+
+const Login = lazy(() => import("./pages/Login"));
+const Signin = lazy(() => import("./pages/Signin"));
+const Home = lazy(() => import("./pages/Home"));
+const EditUserData = lazy(() => import("./pages/EditUserData"));
+const Profile = lazy(() => import("./pages/Profile"));
+const SearchRoutes = lazy(() => import("./routes/SearchRoutes"));
+const PostRoutes = lazy(() => import("./routes/PostRoutes"));
+const ChatRoutes = lazy(() => import("./routes/ChatRoutes"));
 
 function App() {
-    const { isLoggedIn, currUserId } = useAppContext();
+    const { checkingAuthToken, isLoggedIn, currUserId } = useAppContext();
     const socket = useSocketContext();
 
     const { dispatch: messageDispatch } = useMessageContext();
@@ -127,68 +139,128 @@ function App() {
     return (
         <div className="bg-black text-white font-poppins-light h-screen">
             <div className="container max-w-[1200px] mx-auto">
-                <BrowserRouter>
-                    <Routes>
-                        {isLoggedIn ? (
-                            <>
-                                <Route
-                                    path="/"
-                                    element={
-                                        <ColumnLayout>
-                                            <Home />
-                                        </ColumnLayout>
-                                    }
-                                />
-                                <Route
-                                    path="/edit-profile"
-                                    element={
-                                        <ColumnLayout>
-                                            <EditUserData />
-                                        </ColumnLayout>
-                                    }
-                                />
-                                <Route
-                                    path="/profile/:userId"
-                                    element={
-                                        <FollowersContextProvider>
-                                            <FollowingsContextProvider>
-                                                <ColumnLayout>
-                                                    <Profile />
-                                                </ColumnLayout>
-                                            </FollowingsContextProvider>
-                                        </FollowersContextProvider>
-                                    }
-                                />
+                {!isLoggedIn && checkingAuthToken ? (
+                    // when auth_token is checked
+                    <LoadingPage message="Verifying authentication token..." />
+                ) : (
+                    <BrowserRouter>
+                        <Routes>
+                            {!isLoggedIn ? (
+                                <>
+                                    <Route
+                                        path="/"
+                                        element={
+                                            <Suspense
+                                                fallback={<LoadingPage />}
+                                            >
+                                                <Login />
+                                            </Suspense>
+                                        }
+                                    />
+                                    <Route
+                                        path="/sign-in"
+                                        element={
+                                            <Suspense
+                                                fallback={<LoadingPage />}
+                                            >
+                                                <Signin />
+                                            </Suspense>
+                                        }
+                                    />
+                                    <Route
+                                        path="/*"
+                                        element={<Navigate to={"/"} />}
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    <Route
+                                        path="/"
+                                        element={
+                                            <ColumnLayout>
+                                                <Suspense
+                                                    fallback={<LoadingPage />}
+                                                >
+                                                    <Home />
+                                                </Suspense>
+                                            </ColumnLayout>
+                                        }
+                                    />
+                                    <Route
+                                        path="/edit-profile"
+                                        element={
+                                            <ColumnLayout>
+                                                <Suspense
+                                                    fallback={<LoadingPage />}
+                                                >
+                                                    <EditUserData />
+                                                </Suspense>
+                                            </ColumnLayout>
+                                        }
+                                    />
+                                    <Route
+                                        path="/profile/:userId"
+                                        element={
+                                            <FollowersContextProvider>
+                                                <FollowingsContextProvider>
+                                                    <ColumnLayout>
+                                                        <Suspense
+                                                            fallback={
+                                                                <LoadingPage />
+                                                            }
+                                                        >
+                                                            <Profile />
+                                                        </Suspense>
+                                                    </ColumnLayout>
+                                                </FollowingsContextProvider>
+                                            </FollowersContextProvider>
+                                        }
+                                    />
 
-                                <Route
-                                    path="/search/*"
-                                    element={
-                                        <ColumnLayout>
-                                            <SearchRoutes />
-                                        </ColumnLayout>
-                                    }
-                                />
+                                    <Route
+                                        path="/search/*"
+                                        element={
+                                            <ColumnLayout>
+                                                <Suspense
+                                                    fallback={<LoadingPage />}
+                                                >
+                                                    <SearchRoutes />
+                                                </Suspense>
+                                            </ColumnLayout>
+                                        }
+                                    />
 
-                                <Route
-                                    path="/post/*"
-                                    element={<PostRoutes />}
-                                />
+                                    <Route
+                                        path="/post/*"
+                                        element={
+                                            <Suspense
+                                                fallback={<LoadingPage />}
+                                            >
+                                                <PostRoutes />
+                                            </Suspense>
+                                        }
+                                    />
 
-                                <Route
-                                    path="/chats/*"
-                                    element={<ChatRoutes />}
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <Route path="/" element={<Login />} />
-                                <Route path="/sign-in" element={<Signin />} />
-                            </>
-                        )}
+                                    <Route
+                                        path="/chats/*"
+                                        element={
+                                            <Suspense
+                                                fallback={<LoadingPage />}
+                                            >
+                                                <ChatRoutes />
+                                            </Suspense>
+                                        }
+                                    />
 
-                        <Route path="*" element={<Navigate to={"/"} />} />
-                    </Routes>
-                </BrowserRouter>
+                                    <Route
+                                        path="/*"
+                                        element={<Navigate to={"/"} />}
+                                    />
+                                </>
+                            )}
+                        </Routes>
+                    </BrowserRouter>
+                )}
             </div>
         </div>
     );

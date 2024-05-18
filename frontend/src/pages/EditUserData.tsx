@@ -183,7 +183,7 @@ const EditUserData = () => {
     }, [watch("description")]);
 
     return (
-        <div className="pt-14 md:pt-0 overflow-auto flex justify-center h-screen select-none">
+        <div className="pt-14 md:pt-4 overflow-auto flex justify-center h-screen select-none">
             <form
                 className="max-w-[600px] w-[calc(100%-20px)] h-fit p-6 flex flex-col gap-3 rounded-lg border border-whiteAlpha2"
                 onSubmit={handleSubmit(onSubmit)}

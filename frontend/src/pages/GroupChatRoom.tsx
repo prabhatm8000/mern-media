@@ -82,12 +82,19 @@ const GroupChatRoom = () => {
     const [chatData, setChatData] = useState<GroupChatBasicDataType>();
 
     useEffect(() => {
+        let flag = false;
+
         groupChatState.forEach((data) => {
             if (data._id.toString() === chatId) {
                 setChatData(data);
+                flag = true;
                 return;
             }
         });
+
+        if (!flag) {
+            navigation("/chats");
+        }
     }, [chatId]);
 
     // prev messages

@@ -247,63 +247,82 @@ const SideBarChat = () => {
                 </div>
             </div>
 
-            {/* chats */}
-            {window === "CHATS" && (
-                <div className="overflow-auto px-4">
-                    {chats.map((chat, index) => {
-                        if (index >= chats.length - 1) {
-                            return (
-                                <div key={index} ref={lastChatCardRef}>
-                                    <ChatCard data={chat} />
-                                </div>
-                            );
-                        }
-                        return (
-                            <div
-                                key={index}
-                                className="border-b border-whiteAlpha2"
-                            >
-                                <ChatCard data={chat} />
-                            </div>
-                        );
-                    })}
-                    {(loadingChats || searchingChats) && <ChatCardLoading />}
-                    {(loadingChats || searchingChats) && chats.length === 0 && (
-                        <div className="text-whiteAlpha1">No Chats</div>
-                    )}
-                </div>
-            )}
+            <div className="m-2 p-2 rounded-xl border border-whiteAlpha2 my-0 pb-0 border-b-0 rounded-b-none bg-black2/30">
+                {/* chats */}
+                {window === "CHATS" && (
+                    <>
+                        <div className="overflow-auto px-2">
+                            {chats.map((chat, index) => {
+                                if (index >= chats.length - 1) {
+                                    return (
+                                        <div key={index} ref={lastChatCardRef}>
+                                            <ChatCard data={chat} />
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <div
+                                        key={index}
+                                        className="border-b border-whiteAlpha2"
+                                    >
+                                        <ChatCard data={chat} />
+                                    </div>
+                                );
+                            })}
+                            {(loadingChats || searchingChats) && (
+                                <ChatCardLoading />
+                            )}
+                        </div>
 
-            {/* groups */}
-            {window === "GROUPS" && (
-                <div className="overflow-auto px-4">
-                    {groupChats.map((chat, index) => {
-                        if (index >= groupChats.length - 1) {
-                            return (
-                                <div key={index} ref={lastGroupChatCardRef}>
-                                    <GroupChatCard data={chat} />
+                        {!loadingChats &&
+                            !searchingChats &&
+                            chats.length === 0 && (
+                                <div className="text-whiteAlpha1 w-full h-full flex justify-center items-center">
+                                    No Chats
                                 </div>
-                            );
-                        }
-                        return (
-                            <div
-                                key={index}
-                                className="border-b border-whiteAlpha2"
-                            >
-                                <GroupChatCard data={chat} />
-                            </div>
-                        );
-                    })}
-                    {(loadingGroupChats || searchingGroupChats) && (
-                        <ChatCardLoading />
-                    )}
-                    {(loadingGroupChats || searchingGroupChats) &&
-                        groupChats.length === 0 && (
-                            <div className="text-whiteAlpha1">No Group Chats</div>
-                        )}
-                </div>
-            )}
+                            )}
+                    </>
+                )}
 
+                {/* groups */}
+                {window === "GROUPS" && (
+                    <>
+                        <div className="overflow-auto px-2">
+                            {groupChats.map((chat, index) => {
+                                if (index >= groupChats.length - 1) {
+                                    return (
+                                        <div
+                                            key={index}
+                                            ref={lastGroupChatCardRef}
+                                        >
+                                            <GroupChatCard data={chat} />
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <div
+                                        key={index}
+                                        className="border-b border-whiteAlpha2"
+                                    >
+                                        <GroupChatCard data={chat} />
+                                    </div>
+                                );
+                            })}
+                            {(loadingGroupChats || searchingGroupChats) && (
+                                <ChatCardLoading />
+                            )}
+                        </div>
+
+                        {!loadingGroupChats &&
+                            !searchingGroupChats &&
+                            groupChats.length === 0 && (
+                                <div className="text-whiteAlpha1 w-full h-full flex justify-center items-center">
+                                    No Group Chats
+                                </div>
+                            )}
+                    </>
+                )}
+            </div>
             <div className="absolute p-2 rounded-full bg-cyan-800 bottom-5 right-5">
                 <Link to={"/chats/create-chat"}>
                     <TbMessage2Plus className="size-8" />

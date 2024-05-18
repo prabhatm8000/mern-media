@@ -11,6 +11,7 @@ export type ToastMessage = {
 
 export type AppContext = {
     showToast: (toastMessage: ToastMessage) => void;
+    checkingAuthToken: boolean;
     isLoggedIn: boolean;
     currUserId: string | undefined;
 };
@@ -31,7 +32,7 @@ export const AppContextProvider = ({
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
     const [connectSocket, setConnectSocket] = useState<boolean>(false);
 
-    const { data } = useQuery(
+    const { data, isFetching: checkingAuthToken } = useQuery(
         "validateToken",
         apiClient.validateToken,
         {
@@ -39,11 +40,11 @@ export const AppContextProvider = ({
             refetchOnWindowFocus: true,
             onError: () => {
                 setConnectSocket(false);
-                setIsLoggedIn(false)
+                setIsLoggedIn(false);
             },
             onSuccess: () => {
                 setConnectSocket(true);
-                setIsLoggedIn(true)
+                setIsLoggedIn(true);
             },
         }
     );
@@ -62,7 +63,8 @@ export const AppContextProvider = ({
                 showToast: (toastMessage) => {
                     setToast(toastMessage);
                 },
-                isLoggedIn: isLoggedIn,
+                checkingAuthToken,
+                isLoggedIn,
                 currUserId: data?.userId,
             }}
         >

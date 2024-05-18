@@ -28,7 +28,7 @@ const MessageBubble = ({ data }: { data: MessageType }) => {
                 }`}
             >
                 <div
-                    className={`relative min-w-24 max-w-64 md:max-w-96 w-fit pt-1.5 pb-5 px-3 rounded-lg ${
+                    className={`relative min-w-[100px] max-w-64 md:max-w-96 w-fit pt-1.5 pb-5 px-3 rounded-lg ${
                         currUserId === data.sender.toString()
                             ? "text-end bg-blue-500/80 rounded-br-none"
                             : "text-start bg-black2 rounded-bl-none"
@@ -55,7 +55,7 @@ const MessageBubble = ({ data }: { data: MessageType }) => {
                     )}
                     <span className="">{data.content}</span>
                     <div
-                        className={`absolute text-xs font-poppins-bold bottom-1 text-white/55 flex items-center gap-2 mx-3 ${
+                        className={`absolute text-xs font-poppins-bold bottom-1 text-white/55 flex items-center gap-2 mx-2 ${
                             currUserId === data.sender.toString()
                                 ? "right-0"
                                 : "left-0"

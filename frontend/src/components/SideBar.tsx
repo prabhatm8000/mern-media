@@ -74,7 +74,7 @@ const SideBar = ({
     return (
         <>
             <div
-                className="px-4 py-2 w-full fixed right-0 z-50 bg-black1/50 rounded-lg md:hidden flex justify-between items-center"
+                className="px-4 py-2 w-full fixed z-50 bg-black/60 md:hidden flex justify-between items-center"
                 style={{
                     backdropFilter: "blur(2px)",
                 }}
@@ -83,7 +83,7 @@ const SideBar = ({
                     MernMedia
                 </Link>
                 <button
-                    className="w-fit"
+                    className="w-fit bg-black/60"
                     onClick={() => {
                         handleShowSideBarBtn();
                         setShowNotifications(false);
@@ -97,7 +97,7 @@ const SideBar = ({
                             {doIHaveNewNotifications && (
                                 <span className="absolute -translate-y-[25%] -translate-x-[125%] bg-red-500 p-1.5 rounded-full"></span>
                             )}
-                            <RxHamburgerMenu className="size-6 z-[11]" />
+                            <RxHamburgerMenu className="size-6 z-[11] bg-transparent" />
                         </>
                     )}
                 </button>

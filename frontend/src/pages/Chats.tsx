@@ -1,10 +1,12 @@
 const Chats = () => {
     return (
-        <div className="flex justify-center items-center flex-col gap-2 h-[calc(100vh-16px)] m-2 ms-1 rounded-md border border-whiteAlpha2">
-            Chats by
-            <div className="text-5xl text-white px-3 font-bloodySunday">
+        <div className="flex justify-center items-center flex-col gap-2 h-screen">
+            <h5 className="text-white3 px-3">
+                Chats by
+            </h5>
+            <h2 className="text-5xl text-white px-3 font-bloodySunday">
                 MernMedia
-            </div>
+            </h2>
         </div>
     );
 };

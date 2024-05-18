@@ -9,10 +9,12 @@ import SearchResultCard from "../components/SearchResultCard";
 import SearchResultCardLoading from "../components/skeletonLoadings/SearchResultCardLoading";
 import { useAppContext } from "../contexts/AppContext";
 import { useChatsContext } from "../contexts/ChatsContext";
+import { useGroupChatsContext } from "../contexts/GroupChatsContext";
 
 const CreateChat = () => {
     const { showToast } = useAppContext();
     const { dispatch: chatsDispatch } = useChatsContext();
+    const { dispatch: groupChatsDispatch } = useGroupChatsContext();
     const navigation = useNavigate();
 
     // search
@@ -87,8 +89,16 @@ const CreateChat = () => {
                         chatData.chatId
                     }`
                 );
-            } else if (groupName) {
-                // todo: groupDispatch updation
+            } else if (groupName && "creator" in chatData) {
+                groupChatsDispatch({
+                    type: "UPDATE_CHATDATA",
+                    payload: {
+                        chatId: chatData._id.toString(),
+                        chatData: {
+                            ...chatData,
+                        },
+                    },
+                });
                 navigation(`/chats/group-chat/${chatData._id}`);
             } else if ("userData" in chatData) {
                 chatsDispatch({
@@ -96,17 +106,21 @@ const CreateChat = () => {
                     payload: {
                         chatId: chatData._id.toString(),
                         chatData: {
-                            _id: chatData._id,
-                            lastMessageOn: chatData.lastMessageOn,
-                            lastMessage: chatData.lastMessage,
-                            userData: chatData.userData,
+                            ...chatData,
                         },
                     },
                 });
                 navigation(`/chats/chat/${chatData._id}`);
             }
         } catch (error) {
-            showToast({ message: error as string, type: "ERROR" });
+            if (error instanceof Error) {
+                showToast({ message: error.message, type: "ERROR" });
+            } else {
+                showToast({
+                    message: "An unknown error occurred",
+                    type: "ERROR",
+                });
+            }
         }
     };
 
@@ -122,7 +136,7 @@ const CreateChat = () => {
                     placeholder="Search"
                     value={searchQuery}
                     onChange={(e) => {
-                        setSearchQuery(e.target.value.toLowerCase());
+                        setSearchQuery(e.target.value);
                     }}
                 />
                 <Link to={"/chats"} className="absolute left-0">
@@ -138,7 +152,7 @@ const CreateChat = () => {
                             return (
                                 <div
                                     key={i}
-                                    className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px] flex justify-between items-center gap-2"
+                                    className="w-full flex justify-between items-center gap-2"
                                 >
                                     <SearchResultCard
                                         searchResult={searchResult}
@@ -161,13 +175,13 @@ const CreateChat = () => {
 
                 {isFetching && (
                     <>
-                        <div className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
+                        <div className="w-full">
                             <SearchResultCardLoading />
                         </div>
-                        <div className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
+                        <div className="w-full">
                             <SearchResultCardLoading />
                         </div>
-                        <div className="min-w-[340px] md:min-w-[540px] lg:min-w-[740px]">
+                        <div className="w-full">
                             <SearchResultCardLoading />
                         </div>
                     </>

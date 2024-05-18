@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import Chat from "../models/chat";
 import ChatBlock from "../models/chatBlock";
 import Message from "../models/message";
@@ -52,6 +52,16 @@ export const createChat = async (req: Request, res: Response) => {
             return res
                 .status(500)
                 .json({ message: "Name is required for a group chat" });
+        }
+
+        // blocked user check
+        if (!isGroup) {
+            const blocked = await ChatBlock.findOne({
+                userId: new mongoose.Types.ObjectId(req.userId),
+            });
+            if (blocked && blocked.blockedUserIds.includes(userIds[1])) {
+                return res.status(400).json({ message: "User is blocked" });
+            }
         }
 
         const chat = await Chat.find({
@@ -256,6 +266,20 @@ export const getChats = async (req: Request, res: Response) => {
             },
             {
                 $lookup: {
+                    from: "ChatBlock",
+                    pipeline: [
+                        {
+                            $match: {
+                                userId: new mongoose.Types.ObjectId(req.userId),
+                            },
+                        },
+                        { $project: { _id: 0, blockedUserIds: 1 } },
+                    ],
+                    as: "chatBlock",
+                },
+            },
+            {
+                $lookup: {
                     from: "UserData",
                     localField: "membersUserId",
                     foreignField: "userId",
@@ -332,16 +356,6 @@ export const getChats = async (req: Request, res: Response) => {
                 },
             },
             {
-                $lookup: {
-                    from: "ChatBlock",
-                    pipeline: [
-                        { $match: { userId: req.userId } },
-                        { $project: { blockedUserIds: 1 } },
-                    ],
-                    as: "chatBlock",
-                },
-            },
-            {
                 $unwind: "$userData",
             },
             {
@@ -357,14 +371,14 @@ export const getChats = async (req: Request, res: Response) => {
                     "userAuthData._id": {
                         $ne: new mongoose.Types.ObjectId(req.userId),
                     },
-                    // $expr: {
-                    //     $not: {
-                    //         $in: [
-                    //             "$userData.userId",
-                    //             "$chatBlock.blockedUserIds",
-                    //         ],
-                    //     },
-                    // },
+                    $expr: {
+                        $not: {
+                            $in: [
+                                "$userData.userId",
+                                "$chatBlock.blockedUserIds",
+                            ],
+                        },
+                    },
                 },
             },
             {
@@ -415,6 +429,20 @@ export const searchChat = async (req: Request, res: Response) => {
                         },
                         { membersUserId: { $size: 2 } },
                     ],
+                },
+            },
+            {
+                $lookup: {
+                    from: "ChatBlock",
+                    pipeline: [
+                        {
+                            $match: {
+                                userId: new mongoose.Types.ObjectId(req.userId),
+                            },
+                        },
+                        { $project: { _id: 0, blockedUserIds: 1 } },
+                    ],
+                    as: "chatBlock",
                 },
             },
             {
@@ -480,6 +508,7 @@ export const searchChat = async (req: Request, res: Response) => {
                 $unwind: "$userAuthData",
             },
             { $unwind: "$lastMessageOn" },
+            { $unwind: "$chatBlock" },
             {
                 $match: {
                     "userData.userId": {
@@ -487,6 +516,14 @@ export const searchChat = async (req: Request, res: Response) => {
                     },
                     "userAuthData._id": {
                         $ne: new mongoose.Types.ObjectId(req.userId),
+                    },
+                    $expr: {
+                        $not: {
+                            $in: [
+                                "$userData.userId",
+                                "$chatBlock.blockedUserIds",
+                            ],
+                        },
                     },
                     $or: [
                         {
@@ -1356,6 +1393,81 @@ export const getMessages = async (req: Request, res: Response) => {
 
         const messages = await Message.aggregate([
             {
+                // get chatData
+                $lookup: {
+                    from: "Chat",
+                    let: { chatId: { $toObjectId: chatId } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$_id", "$$chatId"] },
+                                    ],
+                                },
+                            },
+                        },
+                        { $project: { _id: 0, membersUserId: 1, isGroup: 1 } },
+                    ],
+                    as: "chatData",
+                },
+            },
+            { $unwind: "$chatData" },
+            {
+                // getting blockedUserIds
+                $lookup: {
+                    from: "ChatBlock",
+                    let: { userId: { $toObjectId: req.userId } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ["$userId", "$$userId"],
+                                },
+                            },
+                        },
+                        { $project: { _id: 0, blockedUserIds: 1 } },
+                    ],
+                    as: "chatBlock",
+                },
+            },
+            { $unwind: "$chatBlock" },
+            {
+                $addFields: {
+                    otherMember: {
+                        $arrayElemAt: [
+                            {
+                                $filter: {
+                                    input: "$chatData.membersUserId",
+                                    cond: {
+                                        $ne: [
+                                            "$$this",
+                                            new mongoose.Types.ObjectId(
+                                                req.userId
+                                            ),
+                                        ],
+                                    },
+                                },
+                            },
+                            0,
+                        ],
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    isBlocked: {
+                        $in: ["$otherMember", "$chatBlock.blockedUserIds"],
+                    },
+                    isGroup: "$chatData.isGroup",
+                },
+            },
+            {
+                $match: {
+                    $or: [{ isGroup: true }, { isBlocked: false }],
+                },
+            },
+            {
                 $match: {
                     chatId: new mongoose.Types.ObjectId(chatId),
                 },
@@ -1392,6 +1504,7 @@ export const getMessages = async (req: Request, res: Response) => {
                         profilePictureUrl: "$userData.profilePictureUrl",
                         name: "$userData.name",
                     },
+                    shit: "$isGroup",
                 },
             },
             { $sort: { sentAt: -1 } },

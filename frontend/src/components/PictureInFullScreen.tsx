@@ -13,7 +13,7 @@ const PictureInFullScreen = ({ url, onClose }: PictureInFullScreenProps) => {
             <FadeBG onClick={onClose} />
             <div onClick={onClose} className="absolute inset-0 z-[21] flex justify-center items-center overflow-hidden">
                 <div
-                    className="fixed mt-44 md:mt-2 mx-2 max-w-[900px] h-[900px]"
+                    className="fixed pt-14 md:pt-4 p-2 max-w-[900px] h-screen"
                     style={{
                         width: "clamp(18.75rem, 5.113636363636365rem + 68.18181818181817vw, 56.25rem)",
                     }}

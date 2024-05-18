@@ -17,7 +17,7 @@ const ChatMessageDateBubble = ({
     return (
         <>
             {date.length > 0 && (
-                <div className="flex justify-center">
+                <div className="flex justify-center my-4">
                     <span className="px-2 py-1 bg-whiteAlpha2 text-white3 text-sm rounded-lg">
                         {date}
                     </span>
