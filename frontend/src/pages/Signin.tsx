@@ -155,10 +155,6 @@ const Signin = () => {
                         Login
                     </Link>
                 </div>
-
-                <div className="flex justify-center items-center">
-                    <BiLogoGithub className="size-12" />
-                </div>
             </form>
         </div>
     );
