@@ -431,11 +431,11 @@ const Profile = () => {
                             />
                             {userData.userId.toString() === currUserId && (
                                 <Link
-                                    className="absolute bottom-[15%] translate-y-[50%] right-[15%] translate-x-[50%] p-1.5 rounded-full bg-blue-500 border border-blue-300"
+                                    className="absolute bottom-[15%] translate-y-[50%] right-[15%] translate-x-[50%] p-1.5 rounded-full bg-black/70 border"
                                     to={"/edit-profile"}
                                     title="Edit Profile"
                                 >
-                                    <MdEdit className="size-6" />
+                                    <MdEdit className="size-6 text-white" />
                                 </Link>
                             )}
                         </div>
@@ -460,14 +460,14 @@ const Profile = () => {
                                             : "Follow"}
                                     </span>
                                 </button>
-
+{/* 
                                 <Link
                                     className="px-3 py-1 rounded-full bg-black2 font-poppins-bold hover:bg-blue-400 hover:px-4 transition-all duration-300 delay-75"
                                     to={"/"}
                                     title="Message"
                                 >
                                     Message
-                                </Link>
+                                </Link> */}
                             </div>
                         )}
                     </div>
