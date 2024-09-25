@@ -45,9 +45,9 @@ const joinLeaveRoomEvents = (socket: CtkSocket) => {
         const isValid = await userExistInChat(chatId, socket.userId.toString());
         if (!isValid) {
             socket.emit("error", { message: "You'r not a member" });
-            console.log(
-                `userId: ${socket.userId} is not a member of chatId: ${chatId}`
-            );
+            // console.log(
+            //     `userId: ${socket.userId} is not a member of chatId: ${chatId}`
+            // );
             return;
         }
 
@@ -151,10 +151,10 @@ const messageEvents = (socket: CtkSocket) => {
                 }
             });
 
-            console.log(socketIdOfMembersConnected);
+            // console.log(socketIdOfMembersConnected);
 
             if (socketIdOfMembersConnected.length === 0) {
-                console.log("no memeber connected in " + chatId);
+                // console.log("no memeber connected in " + chatId);
                 return;
             }
 

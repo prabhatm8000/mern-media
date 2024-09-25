@@ -84,7 +84,7 @@ export const followUnfollow = async (req: Request, res: Response) => {
         await session.abortTransaction();
         await session.endSession();
 
-        console.log("error in follow ", error);
+        // console.log("error in follow ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -128,7 +128,7 @@ export const doIFollow = async (req: Request, res: Response) => {
 
         res.status(200).json({ doIFollow });
     } catch (error) {
-        console.log("error in doIFollow ", error);
+        // console.log("error in doIFollow ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -205,7 +205,7 @@ export const followers = async (req: Request, res: Response) => {
 
         res.status(200).json(follow);
     } catch (error) {
-        console.log("error while followers ", error);
+        // console.log("error while followers ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -303,7 +303,7 @@ export const searchFollowers = async (req: Request, res: Response) => {
 
         res.status(200).json(follow);
     } catch (error) {
-        console.log("error while searching followers ", error);
+        // console.log("error while searching followers ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -380,7 +380,7 @@ export const followings = async (req: Request, res: Response) => {
 
         res.status(200).json(follow);
     } catch (error) {
-        console.log("error while followings ", error);
+        // console.log("error while followings ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -478,7 +478,7 @@ export const searchFollowings = async (req: Request, res: Response) => {
 
         res.status(200).json(follow);
     } catch (error) {
-        console.log("error while searching followings ", error);
+        // console.log("error while searching followings ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

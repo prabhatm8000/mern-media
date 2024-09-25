@@ -38,7 +38,7 @@ export const addPost = async (req: Request, res: Response) => {
         // 201 -> created
         res.status(201).json(post);
     } catch (error) {
-        console.log("error while adding post", error);
+        // console.log("error while adding post", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -146,7 +146,7 @@ export const getPostHome = async (req: Request, res: Response) => {
 
         res.status(200).json(homePosts);
     } catch (error) {
-        console.log("error while getting home posts", error);
+        // console.log("error while getting home posts", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -222,7 +222,7 @@ export const getPostsByUserId = async (req: Request, res: Response) => {
 
         res.status(200).json(posts);
     } catch (error) {
-        console.log("error while getting post by userId ", error);
+        // console.log("error while getting post by userId ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -275,7 +275,7 @@ export const getPostById = async (req: Request, res: Response) => {
 
         res.status(200).json(post[0]);
     } catch (error) {
-        console.log("error while getting post by Id", error);
+        // console.log("error while getting post by Id", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -305,7 +305,7 @@ export const deletePost = async (req: Request, res: Response) => {
 
         res.status(200).json({ message: "Post deleted" });
     } catch (error) {
-        console.log("error while deleting post", error);
+        // console.log("error while deleting post", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -349,7 +349,7 @@ export const likeUnlike = async (req: Request, res: Response) => {
             return res.status(200).json({ message: "Post liked" });
         }
     } catch (error) {
-        console.log("error in likeUnlike", error);
+        // console.log("error in likeUnlike", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

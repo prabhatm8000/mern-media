@@ -17,7 +17,7 @@ export const searchAutoComplete = async (req: Request, res: Response) => {
 
         res.status(200).json(users);
     } catch (error) {
-        console.log("error while search autocomplete ", error);
+        // console.log("error while search autocomplete ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -62,7 +62,7 @@ export const searchUser = async (req: Request, res: Response) => {
 
         res.status(200).json(result);
     } catch (error) {
-        console.log("error while search ", error);
+        // console.log("error while search ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

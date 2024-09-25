@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "react-query";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import * as apiClient from "../apiClient";
 import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import { useAppContext } from "../contexts/AppContext";
@@ -10,7 +10,11 @@ export type LoginFormData = {
     password: string;
 };
 
-const Login = () => {
+const Login = ({
+    setFormType,
+}: {
+    setFormType: (formType: "login" | "signin") => void;
+}) => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const location = useLocation();
@@ -47,92 +51,91 @@ const Login = () => {
     });
 
     return (
-        <div className="flex justify-center items-center h-screen select-none">
-            <form
-                className="max-w-[320px] h-fit px-10 py-8 rounded border border-whiteAlpha2 shadow-lg hover:shadow-black2 transition-shadow delay-75 duration-500"
-                onSubmit={onSubmit}
-                autoComplete="off"
-            >
-                <h2 className="text-5xl text-center mb-10 font-bloodySunday">
-                    MernMedia
-                </h2>
+        <form
+            className="max-w-[320px] h-fit px-10 py-6 rounded-2xl border border-whiteAlpha2 shadow-lg hover:shadow-black2 transition-shadow delay-75 duration-500"
+            onSubmit={onSubmit}
+            autoComplete="off"
+        >
+            <h2 className="text-3xl lg:text-5xl text-center mb-6">Login</h2>
 
-                <div className="space-y-2 mb-6">
-                    <input
-                        placeholder="Username"
-                        className={`bg-black1 text-sm border rounded ${
-                            errors.username
-                                ? "border-red-500"
-                                : "border-whiteAlpha2"
-                        } w-full py-2 px-3 focus:outline-none focus:border-blue-500 placeholder:text-whiteAlpha1`}
-                        type="text"
-                        {...register("username", {
-                            required: "Username is required",
-                            pattern: {
-                                value: /^\S*$/,
-                                message: "Whitespace is not allowed",
-                            },
-                        })}
-                        onBlur={(e) => {
-                            // Trim whitespace on blur
-                            const trimmedValue = e.target.value.trim();
-                            setValue("username", trimmedValue, {
-                                shouldValidate: true,
-                            });
-                        }}
-                    />
-                    {errors.username && (
-                        <span className="text-red-500 text-sm">
-                            *{errors.username.message}
-                        </span>
-                    )}
-                    <input
-                        placeholder="Password"
-                        className={`bg-black1 text-sm border rounded ${
-                            errors.password
-                                ? "border-red-500"
-                                : "border-whiteAlpha2"
-                        } w-full py-2 px-3 focus:outline-none focus:border-blue-500 placeholder:text-whiteAlpha1`}
-                        type="password"
-                        {...register("password", {
-                            required: "Password is required",
-                            minLength: {
-                                value: 6,
-                                message:
-                                    "Password must be at least 6 Characters long",
-                            },
-                        })}
-                    />
-                    {errors.password && (
-                        <span className="text-red-500 text-sm">
-                            *{errors.password.message}
-                        </span>
-                    )}
-                </div>
-
-                <button
-                    className="mb-6 relative w-full items-center justify-start inline-block px-2 py-1 overflow-hidden font-medium transition-all bg-blue-600 rounded-full hover:bg-white group"
-                    type="submit"
-                >
-                    <span className="absolute inset-0 border-0 group-hover:border-[25px] ease-linear duration-100 transition-all border-white rounded-full"></span>
-                    <span className="relative w-full font-semibold text-sm text-white transition-colors duration-300 ease-in-out group-hover:text-blue-600">
-                        <span className="flex justify-center items-center gap-1">
-                            {isLoading && (
-                                <LoadingCircleSvg className="size-5" />
-                            )}
-                            {isLoading ? "Please Wait..." : "Login"}
-                        </span>
+            <div className="space-y-2 mb-6">
+                <input
+                    placeholder="Username"
+                    className={`bg-black1 text-sm border rounded ${
+                        errors.username
+                            ? "border-red-500"
+                            : "border-whiteAlpha2"
+                    } w-full py-2 px-3 focus:outline-none focus:border-blue-500 placeholder:text-whiteAlpha1`}
+                    type="text"
+                    {...register("username", {
+                        required: "Username is required",
+                        pattern: {
+                            message:
+                                "No special characters, Only underscore is allowed",
+                            value: /^[a-zA-Z0-9_]*$/,
+                        },
+                    })}
+                    onBlur={(e) => {
+                        // Trim whitespace on blur
+                        const trimmedValue = e.target.value.trim();
+                        setValue("username", trimmedValue, {
+                            shouldValidate: true,
+                        });
+                    }}
+                />
+                {errors.username && (
+                    <span className="text-red-500 text-sm">
+                        *{errors.username.message}
                     </span>
-                </button>
+                )}
 
-                <div className="mb-6 text-sm text-center">
-                    {"Don't have an Account? "}
-                    <Link to={"/sign-in"} className="text-blue-300">
-                        Sign up
-                    </Link>
-                </div>
-            </form>
-        </div>
+                <input
+                    placeholder="Password"
+                    className={`bg-black1 text-sm border rounded ${
+                        errors.password
+                            ? "border-red-500"
+                            : "border-whiteAlpha2"
+                    } w-full py-2 px-3 focus:outline-none focus:border-blue-500 placeholder:text-whiteAlpha1`}
+                    type="password"
+                    {...register("password", {
+                        required: "Password is required",
+                        minLength: {
+                            value: 6,
+                            message:
+                                "Password must be at least 6 Characters long",
+                        },
+                    })}
+                />
+                {errors.password && (
+                    <span className="text-red-500 text-sm">
+                        *{errors.password.message}
+                    </span>
+                )}
+            </div>
+
+            <button
+                className="mb-6 relative w-full items-center justify-start inline-block px-2 py-1 overflow-hidden font-medium transition-all bg-blue-600 rounded-full hover:bg-white group"
+                type="submit"
+            >
+                <span className="absolute inset-0 border-0 group-hover:border-[25px] ease-linear duration-100 transition-all border-white rounded-full"></span>
+                <span className="relative w-full font-semibold text-sm text-white transition-colors duration-300 ease-in-out group-hover:text-blue-600">
+                    <span className="flex justify-center items-center gap-1">
+                        {isLoading && <LoadingCircleSvg className="size-5" />}
+                        {isLoading ? "Please Wait..." : "Login"}
+                    </span>
+                </span>
+            </button>
+
+            <div className="mb-6 text-sm text-center">
+                {"Don't have an Account? "}
+                <span
+                    className="text-blue-300 cursor-pointer"
+                    onClick={() => setFormType("signin")}
+                >
+                    Sign up
+                </span>
+            </div>
+        </form>
     );
 };
 

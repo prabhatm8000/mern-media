@@ -35,7 +35,7 @@ export const addComment = async (req: Request, res: Response) => {
 
         res.status(201).json({ message: "Comment added!" });
     } catch (error) {
-        console.log("error in addComment ", error);
+        // console.log("error in addComment ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -93,7 +93,7 @@ export const getCommentByPostId = async (req: Request, res: Response) => {
 
         res.status(200).json(postComments);
     } catch (error) {
-        console.log("error while getting comments by postId", error);
+        // console.log("error while getting comments by postId", error);
         res.status(500).json({ message: "Soemthing went wrong" });
     }
 };
@@ -154,7 +154,7 @@ export const getMyComments = async (req: Request, res: Response) => {
 
         res.status(200).json(postComments);
     } catch (error) {
-        console.log("error while getting comments by postId", error);
+        // console.log("error while getting comments by postId", error);
         res.status(500).json({ message: "Soemthing went wrong" });
     }
 };
@@ -174,7 +174,7 @@ export const deleteComment = async (req: Request, res: Response) => {
         );
         res.status(200).json({ message: "Deleted" });
     } catch (error) {
-        console.log("error while deleting comment", error);
+        // console.log("error while deleting comment", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

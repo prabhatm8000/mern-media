@@ -146,7 +146,7 @@ export const createChat = async (req: Request, res: Response) => {
             return res.status(201).json(groupChatDataBasic);
         }
     } catch (error) {
-        console.log("error while creating chat", error);
+        // console.log("error while creating chat", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -238,7 +238,7 @@ export const getChatData = async (req: Request, res: Response) => {
 
         res.status(200).json(chats[0]);
     } catch (error) {
-        console.log("error while getting chat data", error);
+        // console.log("error while getting chat data", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -424,7 +424,7 @@ export const getChats = async (req: Request, res: Response) => {
 
         res.status(200).json(chats);
     } catch (error) {
-        console.log("error while getting chat", error);
+        // console.log("error while getting chat", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -582,7 +582,7 @@ export const searchChat = async (req: Request, res: Response) => {
 
         res.status(200).json(chats);
     } catch (error) {
-        console.log("error while searching chat ", error);
+        // console.log("error while searching chat ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -609,7 +609,7 @@ export const deleteChat = async (req: Request, res: Response) => {
 
         res.status(200).json();
     } catch (error) {
-        console.log("error while deleting chats", error);
+        // console.log("error while deleting chats", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -691,7 +691,7 @@ export const getGroupChats = async (req: Request, res: Response) => {
 
         res.status(200).json(chats);
     } catch (error) {
-        console.log("error while getting group chats", error);
+        // console.log("error while getting group chats", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -772,7 +772,7 @@ export const searchGroupChat = async (req: Request, res: Response) => {
 
         res.status(200).json(chats);
     } catch (error) {
-        console.log("error while searching group chat ", error);
+        // console.log("error while searching group chat ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -832,7 +832,7 @@ export const getGroupDetails = async (req: Request, res: Response) => {
 
         res.status(200).json(chats[0]);
     } catch (error) {
-        console.log("error while getting chat details", error);
+        // console.log("error while getting chat details", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -906,7 +906,7 @@ export const getGroupMembersDetail = async (req: Request, res: Response) => {
 
         res.status(200).json(memebersUserData);
     } catch (error) {
-        console.log("error while getting chat details", error);
+        // console.log("error while getting chat details", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -953,7 +953,7 @@ export const editGroupChats = async (req: Request, res: Response) => {
 
         res.status(200).json({ message: "Saved" });
     } catch (error) {
-        console.log("error while editing group chatData", error);
+        // console.log("error while editing group chatData", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -995,7 +995,7 @@ export const leaveGroup = async (req: Request, res: Response) => {
 
         res.status(200).json();
     } catch (error) {
-        console.log("error while removing member to group chats", error);
+        // console.log("error while removing member to group chats", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -1054,7 +1054,7 @@ export const addMembers = async (req: Request, res: Response) => {
 
         res.status(200).json();
     } catch (error) {
-        console.log("error while adding member to group chats", error);
+        // console.log("error while adding member to group chats", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -1088,7 +1088,7 @@ export const removeMember = async (req: Request, res: Response) => {
 
         res.status(200).json();
     } catch (error) {
-        console.log("error while removing member to group chats", error);
+        // console.log("error while removing member to group chats", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -1208,7 +1208,7 @@ export const searchMember = async (req: Request, res: Response) => {
 
         res.status(200).json(members);
     } catch (error) {
-        console.log("error while searching members ", error);
+        // console.log("error while searching members ", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -1239,7 +1239,7 @@ export const deleteGroupChats = async (req: Request, res: Response) => {
 
         res.status(200).json();
     } catch (error) {
-        console.log("error while deleting group chats", error);
+        // console.log("error while deleting group chats", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -1318,7 +1318,7 @@ export const blockUnblockUser = async (req: Request, res: Response) => {
 
         res.status(200).json({ message: "blocked" });
     } catch (error) {
-        console.log("error while blocking user", error);
+        // console.log("error while blocking user", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -1387,7 +1387,7 @@ export const getBlockedList = async (req: Request, res: Response) => {
             res.status(500).json({ message: "Something went wrong" });
         }
     } catch (error) {
-        console.log("error while getting blocked user", error);
+        // console.log("error while getting blocked user", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -1543,7 +1543,7 @@ export const getMessages = async (req: Request, res: Response) => {
             { readStatus: true }
         );
     } catch (error) {
-        console.log("error while getting messages", error);
+        // console.log("error while getting messages", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -1559,7 +1559,7 @@ export const uploadAttachments = async (req: Request, res: Response) => {
         }
         res.status(400).json({ message: "Atleast on image file is required" });
     } catch (error) {
-        console.log("error while uploading attachments", error);
+        // console.log("error while uploading attachments", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

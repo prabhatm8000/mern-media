@@ -89,7 +89,7 @@ export const addMessageToDb = async (
 
         return res;
     } catch (error) {
-        console.log("error while adding message to database", error);
+        // console.log("error while adding message to database", error);
     }
 };
 

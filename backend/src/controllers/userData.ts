@@ -42,7 +42,7 @@ export const editUserData = async (req: Request, res: Response) => {
 
         res.status(200).json({ message: "Saved" });
     } catch (error) {
-        console.log("error while editing user data", error);
+        // console.log("error while editing user data", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };
@@ -99,7 +99,7 @@ export const getUserDataById = async (req: Request, res: Response) => {
 
         res.status(200).json(userData[0]);
     } catch (error) {
-        console.log("error while get userData by id", error);
+        // console.log("error while get userData by id", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

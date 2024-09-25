@@ -29,15 +29,15 @@ export const signin = async (req: Request, res: Response) => {
 
         // init UserData for new user
         const userData = new UserData({
-            description: "",
+            description: " ",
             followerCount: 0,
             followingCount: 0,
-            link1: "",
-            link2: "",
-            link3: "",
-            name: "",
+            link1: " ",
+            link2: " ",
+            link3: " ",
+            name: " ",
             postCount: 0,
-            profilePictureUrl: "",
+            profilePictureUrl: " ",
             userId: user._id,
         });
         await userData.save();
@@ -70,7 +70,7 @@ export const signin = async (req: Request, res: Response) => {
 
         return res.status(200).send({ message: "User signed in" });
     } catch (error) {
-        console.log("Error while signin", error);
+        // console.log("Error while signin", error);
         res.status(500).send({ message: "Something went wrong" });
     }
 };
@@ -110,7 +110,7 @@ export const login = async (req: Request, res: Response) => {
 
         return res.status(200).json({ userId: user.id });
     } catch (error) {
-        console.log("Error while login", error);
+        // console.log("Error while login", error);
         return res.status(500).json({ message: "Something went wrong" });
     }
 };

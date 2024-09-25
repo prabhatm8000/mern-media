@@ -176,7 +176,7 @@ export const doIHaveNotifications = async (req: Request, res: Response) => {
 
         res.status(200).json({ response });
     } catch (error) {
-        console.log("error while do i have notifications", error);
+        // console.log("error while do i have notifications", error);
         res.status(500).json({ message: "Something went wrong" });
     }
 };

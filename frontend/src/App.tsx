@@ -16,6 +16,7 @@ import { useSocketContext } from "./contexts/SocketContext";
 import LoadingPage from "./pages/LoadingPage";
 
 import ColumnLayout from "./layouts/ColumnLayout";
+import AuthLanding from "./pages/AuthLanding";
 // import EditUserData from "./pages/EditUserData";
 // import Home from "./pages/Home";
 // import Login from "./pages/Login";
@@ -25,8 +26,9 @@ import ColumnLayout from "./layouts/ColumnLayout";
 // import PostRoutes from "./routes/PostRoutes";
 // import SearchRoutes from "./routes/SearchRoutes";
 
-const Login = lazy(() => import("./pages/Login"));
-const Signin = lazy(() => import("./pages/Signin"));
+// const Login = lazy(() => import("./pages/Login"));
+// const Signin = lazy(() => import("./pages/Signin"));
+const Auth = lazy(() => import("./pages/AuthLanding"));
 const Home = lazy(() => import("./pages/Home"));
 const EditUserData = lazy(() => import("./pages/EditUserData"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -43,18 +45,19 @@ function App() {
     const { dispatch: chatsDispatch } = useChatsContext();
     const { dispatch: groupChatsDispatch } = useGroupChatsContext();
 
-    // handling tab close
     useEffect(() => {
         if (!currUserId) {
             return;
         }
 
+        // handling tab close
         function handleTabClose() {
             return socket.emit("leave");
         }
 
         window.addEventListener("beforeunload", handleTabClose);
 
+        // #region socket events
         socket.on("message", (message: MessageType) => {
             messageDispatch({
                 type: "ADD_MESSAGE",
@@ -132,6 +135,8 @@ function App() {
             showToast({ type: "ERROR", message });
         });
 
+        // #endregion
+
         return () => {
             window.removeEventListener("beforeunload", handleTabClose);
             socket.off("message");
@@ -159,17 +164,7 @@ function App() {
                                             <Suspense
                                                 fallback={<LoadingPage />}
                                             >
-                                                <Login />
-                                            </Suspense>
-                                        }
-                                    />
-                                    <Route
-                                        path="/sign-in"
-                                        element={
-                                            <Suspense
-                                                fallback={<LoadingPage />}
-                                            >
-                                                <Signin />
+                                                <AuthLanding />
                                             </Suspense>
                                         }
                                     />
