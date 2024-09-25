@@ -1,9 +1,9 @@
 import { formatDistanceToNow } from "date-fns";
 
 // image
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 import { Link } from "react-router-dom";
 import { NotificationsDataType } from "../../../backend/src/types/types";
+import Image from "./Image";
 
 interface NotificationCardProps {
     data: NotificationsDataType;
@@ -17,18 +17,15 @@ const NotificationCard = ({ data }: NotificationCardProps) => {
                     ? `/post/${data.postId}`
                     : `/profile/${data.notificationFrom.userId}`
             }
-            className={`flex gap-2 p-2 rounded-md bg-black2 ${data.readStatus ? "opacity-50" : ""}`}
+            className={`flex gap-2 p-2 rounded-md bg-black2 ${
+                data.readStatus ? "opacity-50" : ""
+            }`}
         >
-            <img
-                className={`${data.readStatus ? "" : ""} p-[2.5px] rounded-full w-[40px] h-[40px] hover:scale-125 transition ease-in-out delay-100 duration-300`}
-                onError={() => {
-                    data.notificationFrom.profilePictureUrl = defaultProfilePicture;
-                }}
-                src={
-                    data.notificationFrom.profilePictureUrl === ""
-                        ? defaultProfilePicture
-                        : data.notificationFrom.profilePictureUrl
-                }
+            <Image
+                className={`${
+                    data.readStatus ? "" : ""
+                } p-[2.5px] rounded-full w-[40px] h-[40px] hover:scale-125 transition ease-in-out delay-100 duration-300`}
+                src={data.notificationFrom.profilePictureUrl}
                 alt={data.notificationFrom.username}
                 title={data.notificationFrom.username}
             />

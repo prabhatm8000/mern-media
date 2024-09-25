@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { GoScreenFull } from "react-icons/go";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import Image from "./Image";
 import PictureInFullScreen from "./PictureInFullScreen";
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 
 interface ImageProps {
     urls: string[];
@@ -45,10 +45,7 @@ const Carousel = ({ urls }: ImageProps) => {
                 <div
                     className={`h-[300px] md:h-[400px] flex items-center transition-transform ease-in-out duration-300`}
                 >
-                    <img
-                        onError={() => {
-                            urls[curr] = defaultProfilePicture;
-                        }}
+                    <Image
                         src={urls[curr]}
                         className="actual-image object-cover w-full h-[300px] md:h-[400px] rounded-lg"
                     />

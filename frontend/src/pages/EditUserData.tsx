@@ -24,6 +24,7 @@ import { Area } from "react-easy-crop";
 import { TbCameraPlus } from "react-icons/tb";
 import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
+import Image from "../components/Image";
 
 export type UserDataFormType = {
     description: string;
@@ -206,17 +207,8 @@ const EditUserData = () => {
                 <div className="flex flex-col justify-center items-center ">
                     <div className="relative rounded-full border m-2">
                         <div className="relative group size-[150px] rounded-full">
-                            <img
-                                onError={() => {
-                                    setProfilePictureShow(
-                                        defaultProfilePicture
-                                    );
-                                }}
-                                src={
-                                    profilePictureShow === "" || profilePictureShow === " "
-                                        ? defaultProfilePicture
-                                        : profilePictureShow
-                                }
+                            <Image
+                                src={profilePictureShow}
                                 className="h-full w-full object-cover rounded-full opacity-80"
                             />
                         </div>

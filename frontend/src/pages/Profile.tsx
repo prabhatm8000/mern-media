@@ -1,11 +1,11 @@
 // react
+import gsap from "gsap";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { BiCalendar, BiImage, BiLink } from "react-icons/bi";
 import { MdEdit } from "react-icons/md";
 import { useQuery } from "react-query";
 import { Link, useParams } from "react-router-dom";
-import gsap from "gsap";
 
 // api
 import * as apiClient from "../apiClient";
@@ -17,7 +17,6 @@ import {
 } from "../../../backend/src/types/types";
 
 // image
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 
 // date-fns for formatting date
 import { formatDistanceToNow } from "date-fns";
@@ -29,13 +28,14 @@ import { useFollowingsContext } from "../contexts/FollowingsContext";
 import { usePostsContext } from "../contexts/PostContext";
 
 // components
+import FadeBG from "../components/FadeBG";
+import Image from "../components/Image";
+import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import PostCard from "../components/PostCard";
 import SearchResultCard from "../components/SearchResultCard";
-import FadeBG from "../components/FadeBG";
 import PostCardLoading from "../components/skeletonLoadings/PostCardLoading";
 import ProfileLoading from "../components/skeletonLoadings/ProfileLoading";
 import SearchResultCardLoading from "../components/skeletonLoadings/SearchResultCardLoading";
-import LoadingCircleSvg from "../components/LoadingCircleSvg";
 
 const FOLLOWERS_FOLLOWINGS_LIMIT = 5;
 const POSTS_LIMIT = 5;
@@ -417,16 +417,8 @@ const Profile = () => {
                 >
                     <div className="flex items-center justify-between">
                         <div className="relative">
-                            <img
-                                onError={() => {
-                                    userData.profilePictureUrl =
-                                        defaultProfilePicture;
-                                }}
-                                src={
-                                    userData.profilePictureUrl === ""
-                                        ? defaultProfilePicture
-                                        : userData?.profilePictureUrl
-                                }
+                            <Image
+                                src={userData?.profilePictureUrl}
                                 className="w-[150px] h-[150px] object-cover rounded-full border border-whiteAlpha1"
                             />
                             {userData.userId.toString() === currUserId && (
@@ -460,7 +452,7 @@ const Profile = () => {
                                             : "Follow"}
                                     </span>
                                 </button>
-{/* 
+                                {/* 
                                 <Link
                                     className="px-3 py-1 rounded-full bg-black2 font-poppins-bold hover:bg-blue-400 hover:px-4 transition-all duration-300 delay-75"
                                     to={"/"}

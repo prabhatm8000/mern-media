@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ChatBasicDataType } from "../../../backend/src/types/types";
 import { handleDate } from "../lib/handleDate";
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
+import Image from "./Image";
 
 const ChatCard = ({ data: chat }: { data: ChatBasicDataType }) => {
     return (
@@ -9,15 +9,8 @@ const ChatCard = ({ data: chat }: { data: ChatBasicDataType }) => {
             to={`/chats/chat/${chat._id}`}
             className="flex justify-start items-center gap-2 p-2 relative"
         >
-            <img
-                onError={() => {
-                    chat.userData.profilePictureUrl = defaultProfilePicture;
-                }}
-                src={
-                    chat.userData && chat.userData.profilePictureUrl.length > 0
-                        ? chat.userData.profilePictureUrl
-                        : defaultProfilePicture
-                }
+            <Image
+                src={chat.userData.profilePictureUrl}
                 className="size-[50px] object-cover rounded-full"
                 alt={chat.userData.username}
             />

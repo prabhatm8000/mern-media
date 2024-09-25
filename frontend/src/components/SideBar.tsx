@@ -22,6 +22,7 @@ import { RiChat3Line } from "react-icons/ri";
 import { RxHamburgerMenu } from "react-icons/rx";
 import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 import FadeBG from "./FadeBG";
+import Image from "./Image";
 
 const SideBar = ({
     showSideBar,
@@ -191,18 +192,9 @@ const SideBar = ({
                                 to={"/profile/me"}
                                 className="flex items-center gap-2 rounded-full w-[calc(87%)] hover:bg-whiteAlpha2 my-6 p-2 absolute bottom-0"
                             >
-                                <img
+                                <Image
                                     className="rounded-full border border-whiteAlpha2 size-10 hover:scale-125 transition ease-in-out delay-100 duration-300"
-                                    onError={() => {
-                                        if (userData)
-                                            userData.profilePictureUrl =
-                                                defaultProfilePicture;
-                                    }}
-                                    src={
-                                        userData?.profilePictureUrl === ""
-                                            ? defaultProfilePicture
-                                            : userData?.profilePictureUrl
-                                    }
+                                    src={userData?.profilePictureUrl}
                                     alt={userData?.name}
                                     title={userData?.name}
                                 />

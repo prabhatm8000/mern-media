@@ -1,21 +1,22 @@
 import { useEffect, useState } from "react";
+import type { Area } from "react-easy-crop";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useAppContext } from "../contexts/AppContext";
 import type { GroupChatDataFormType } from "../../../backend/src/types/types";
-import { imageDataUrlToFile } from "../lib/imageDataUrlToFile";
-import type { Area } from "react-easy-crop";
 import ImageCropper from "../components/ImageCropper";
+import { useAppContext } from "../contexts/AppContext";
+import { imageDataUrlToFile } from "../lib/imageDataUrlToFile";
 
 // api
 import * as apiClient from "../apiClient";
 
 // image
+import { AiFillDelete } from "react-icons/ai";
 import { TbCameraPlus } from "react-icons/tb";
+import Image from "../components/Image";
 import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import defaultGroupPicture from "../statics/images/default-group-picture.svg";
-import { AiFillDelete } from "react-icons/ai";
 
 const MAX_LENGTH_OF_DESCRIPTION = 500;
 
@@ -27,9 +28,11 @@ const EditGroupChat = () => {
     const [groupPictureShow, setGroupPictureShow] = useState<string>("");
     const [toggleCropWindow, setToggleCropWindow] = useState<boolean>(false);
 
-    const { data: groupChatData } = useQuery("fetchGroupChatDetails", () =>
-        apiClient.fetchGroupDetails(chatId as string), {
-            refetchOnWindowFocus: false
+    const { data: groupChatData } = useQuery(
+        "fetchGroupChatDetails",
+        () => apiClient.fetchGroupDetails(chatId as string),
+        {
+            refetchOnWindowFocus: false,
         }
     );
 
@@ -186,15 +189,8 @@ const EditGroupChat = () => {
                 <div className="flex flex-col justify-center items-center ">
                     <div className="relative rounded-full border border-whiteAlpha2 hover:border-blue-500/50 m-2">
                         <div className="relative group size-[150px] bg-whiteAlpha2 hover:bg-blue-500/50 rounded-full">
-                            <img
-                                onError={() => {
-                                    setGroupPictureShow(defaultGroupPicture);
-                                }}
-                                src={
-                                    groupPictureShow === ""
-                                        ? defaultGroupPicture
-                                        : groupPictureShow
-                                }
+                            <Image
+                                src={groupPictureShow}
                                 className="h-full w-full object-cover rounded-full opacity-80"
                             />
                         </div>

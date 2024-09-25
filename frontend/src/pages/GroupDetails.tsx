@@ -16,6 +16,7 @@ import { BsPersonFillDash } from "react-icons/bs";
 import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import GroupDetailsLoading from "../components/skeletonLoadings/GroupDetailsLoading";
 import { AiOutlineClose } from "react-icons/ai";
+import Image from "../components/Image";
 
 const MEMBERS_LIMIT = 7;
 
@@ -185,16 +186,8 @@ const GroupDetails = () => {
                         className={`flex flex-col gap-2 pb-2 transition delay-100 duration-300 border-b border-whiteAlpha2`}
                     >
                         <div className="relative w-fit">
-                            <img
-                                onError={() => {
-                                    groupChatData.groupPictureUrl =
-                                        defaultGroupPicture;
-                                }}
-                                src={
-                                    groupChatData.groupPictureUrl === ""
-                                        ? defaultGroupPicture
-                                        : groupChatData?.groupPictureUrl
-                                }
+                            <Image
+                                src={groupChatData.groupPictureUrl}
                                 className="w-[150px] h-[150px] object-cover rounded-full border border-whiteAlpha1"
                             />
                             {groupChatData.creatorUserData.userId.toString() ===
@@ -221,17 +214,10 @@ const GroupDetails = () => {
                             <Link
                                 to={`/profile/${groupChatData.creatorUserData.userId.toString()}`}
                             >
-                                <img
-                                    onError={() => {
-                                        groupChatData.creatorUserData
-                                            .profilePictureUrl = defaultProfilePicture;
-                                    }}  
+                                <Image
                                     src={
                                         groupChatData.creatorUserData
-                                            .profilePictureUrl === ""
-                                            ? defaultProfilePicture
-                                            : groupChatData.creatorUserData
-                                                  .profilePictureUrl
+                                            .profilePictureUrl
                                     }
                                     className="size-[60px] object-cover rounded-full opacity-80"
                                 />

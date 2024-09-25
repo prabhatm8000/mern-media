@@ -3,6 +3,7 @@ import { MessageType } from "../../../backend/src/types/types";
 import { useAppContext } from "../contexts/AppContext";
 import PictureInFullScreen from "./PictureInFullScreen";
 import { useState } from "react";
+import Image from "./Image";
 
 const MessageBubble = ({ data }: { data: MessageType }) => {
     const { currUserId } = useAppContext();
@@ -19,7 +20,7 @@ const MessageBubble = ({ data }: { data: MessageType }) => {
                     onClose={handleCloseShowInFullScreen}
                 />
             )}
-            
+
             <div
                 className={`flex items-center ${
                     currUserId === data.sender.toString()
@@ -38,7 +39,7 @@ const MessageBubble = ({ data }: { data: MessageType }) => {
                         <div className="flex flex-col gap-3 my-2">
                             {data.attachments.map((imageUrl, index) => {
                                 return (
-                                    <img
+                                    <Image
                                         src={imageUrl}
                                         alt={data.senderUserData.username}
                                         key={index}

@@ -24,6 +24,7 @@ import { useMessageContext } from "../contexts/MessageContext";
 import { useSocketContext } from "../contexts/SocketContext";
 import { compressImages } from "../lib/compressImages";
 import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
+import Image from "../components/Image";
 
 const CHAT_LIMIT = 12;
 const MAX_ATTACHMENT_LIMIT = 5;
@@ -356,17 +357,8 @@ const ChatRoom = () => {
                 {chatData !== undefined ? (
                     <>
                         <Link to={`/profile/${chatData.userData.userId}`}>
-                            <img
-                                onError={() => {
-                                    chatData.userData.profilePictureUrl =
-                                        defaultProfilePicture;
-                                }}
-                                src={
-                                    chatData.userData.profilePictureUrl.length >
-                                    0
-                                        ? chatData.userData.profilePictureUrl
-                                        : defaultProfilePicture
-                                }
+                            <Image
+                                src={chatData.userData.profilePictureUrl}
                                 className="size-[50px] object-cover rounded-full"
                                 alt={chatData.userData.username}
                             />
@@ -486,7 +478,7 @@ const ChatRoom = () => {
                     <div className="flex items-center gap-2 mx-4 p-2 bg-black1/45 rounded-lg border border-whiteAlpha2">
                         {imageDataUrls.map((data, index) => (
                             <div className="size-[60px]" key={index}>
-                                <img
+                                <Image
                                     src={data}
                                     alt="attachments"
                                     className="size-[60px] object-cover rounded-md"

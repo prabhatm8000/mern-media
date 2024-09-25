@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 // type
 import { PostCommentUserDataType } from "../../../backend/src/types/types";
 
-
 // date-fns
 import { formatDistanceToNow } from "date-fns";
 
@@ -14,6 +13,7 @@ import defaultProfilePicture from "../statics/images/default-profile-picture.svg
 
 // context
 import { useAppContext } from "../contexts/AppContext";
+import Image from "./Image";
 
 interface CommentCardProps {
     comment: PostCommentUserDataType;
@@ -27,15 +27,8 @@ const CommentCard = ({ comment, handleDeleteBtn }: CommentCardProps) => {
         <div className="grid grid-cols-[25px_1fr] items-start justify-start gap-2 m-2 relative">
             {/* profilePicture */}
             <Link to={`/profile/${comment.userId}`}>
-                <img
-                    onError={() => {
-                        comment.profilePictureUrl = defaultProfilePicture;
-                    }}
-                    src={
-                        comment.profilePictureUrl.length > 0
-                            ? comment.profilePictureUrl
-                            : defaultProfilePicture
-                    }
+                <Image
+                    src={comment.profilePictureUrl}
                     alt={comment.username}
                     className="size-[25px] object-cover rounded-full"
                 />

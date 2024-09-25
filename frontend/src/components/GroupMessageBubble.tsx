@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { MessageType } from "../../../backend/src/types/types";
 import { useAppContext } from "../contexts/AppContext";
 import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
-import { useState } from "react";
+import Image from "./Image";
 import PictureInFullScreen from "./PictureInFullScreen";
 
 const GroupMessageBubble = ({ data }: { data: MessageType }) => {
@@ -27,16 +28,8 @@ const GroupMessageBubble = ({ data }: { data: MessageType }) => {
             >
                 {currUserId !== data.sender.toString() && (
                     <Link to={`/profile/${data.senderUserData.userId}`}>
-                        <img
-                            onError={() => {
-                                data.senderUserData.profilePictureUrl =
-                                    defaultProfilePicture;
-                            }}
-                            src={
-                                data.senderUserData.profilePictureUrl.length > 0
-                                    ? data.senderUserData.profilePictureUrl
-                                    : defaultProfilePicture
-                            }
+                        <Image
+                            src={data.senderUserData.profilePictureUrl}
                             className="size-[20px] object-cover rounded-full translate-y-1"
                             alt={data.senderUserData.username}
                         />
@@ -59,7 +52,7 @@ const GroupMessageBubble = ({ data }: { data: MessageType }) => {
                             <div className="flex flex-col gap-3 my-2">
                                 {data.attachments.map((imageUrl, index) => {
                                     return (
-                                        <img
+                                        <Image
                                             src={imageUrl}
                                             alt={data.senderUserData.username}
                                             key={index}

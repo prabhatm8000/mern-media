@@ -25,6 +25,7 @@ import { useMessageContext } from "../contexts/MessageContext";
 import { useSocketContext } from "../contexts/SocketContext";
 import defaultGroupPicture from "../statics/images/default-group-picture.svg";
 import { compressImages } from "../lib/compressImages";
+import Image from "../components/Image";
 
 const CHAT_LIMIT = 7;
 const MAX_ATTACHMENT_LIMIT = 5;
@@ -355,17 +356,8 @@ const GroupChatRoom = () => {
                 {chatData !== undefined ? (
                     <>
                         <Link to={`/chats/group-chat/${chatData._id}/details`}>
-                            <img
-                                onError={() => {
-                                    chatData.groupPictureUrl =
-                                        defaultGroupPicture;
-                                }}
-                                src={
-                                    chatData.groupPictureUrl &&
-                                    chatData.groupPictureUrl.length > 0
-                                        ? chatData.groupPictureUrl
-                                        : defaultGroupPicture
-                                }
+                            <Image
+                                src={chatData.groupPictureUrl}
                                 className="size-[50px] object-cover rounded-full"
                                 alt={chatData.name}
                             />
@@ -505,7 +497,7 @@ const GroupChatRoom = () => {
                     <div className="flex items-center gap-2 mx-4 p-2 bg-black1/45 rounded-lg border border-whiteAlpha2">
                         {imageDataUrls.map((data, index) => (
                             <div className="size-[60px]" key={index}>
-                                <img
+                                <Image
                                     src={data}
                                     alt="attachments"
                                     className="size-[60px] object-cover rounded-md"
