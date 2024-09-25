@@ -14,6 +14,7 @@ import {
 } from "../../../backend/src/types/types";
 import * as apiClient from "../apiClient";
 import ChatMessageDateBubble from "../components/ChatMessageDateBubble";
+import ImageComponent from "../components/Image";
 import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import MessageBubble from "../components/MessageBubble";
 import MessageBubbleLoading from "../components/skeletonLoadings/MessageBubbleLoading";
@@ -23,8 +24,6 @@ import { useChatsContext } from "../contexts/ChatsContext";
 import { useMessageContext } from "../contexts/MessageContext";
 import { useSocketContext } from "../contexts/SocketContext";
 import { compressImages } from "../lib/compressImages";
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
-import Image from "../components/Image";
 
 const CHAT_LIMIT = 12;
 const MAX_ATTACHMENT_LIMIT = 5;
@@ -357,7 +356,7 @@ const ChatRoom = () => {
                 {chatData !== undefined ? (
                     <>
                         <Link to={`/profile/${chatData.userData.userId}`}>
-                            <Image
+                            <ImageComponent
                                 src={chatData.userData.profilePictureUrl}
                                 className="size-[50px] object-cover rounded-full"
                                 alt={chatData.userData.username}
@@ -478,7 +477,7 @@ const ChatRoom = () => {
                     <div className="flex items-center gap-2 mx-4 p-2 bg-black1/45 rounded-lg border border-whiteAlpha2">
                         {imageDataUrls.map((data, index) => (
                             <div className="size-[60px]" key={index}>
-                                <Image
+                                <ImageComponent
                                     src={data}
                                     alt="attachments"
                                     className="size-[60px] object-cover rounded-md"

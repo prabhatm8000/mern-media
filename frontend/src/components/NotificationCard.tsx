@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 // image
 import { Link } from "react-router-dom";
 import { NotificationsDataType } from "../../../backend/src/types/types";
-import Image from "./Image";
+import ImageComponent from "./Image";
 
 interface NotificationCardProps {
     data: NotificationsDataType;
@@ -21,7 +21,7 @@ const NotificationCard = ({ data }: NotificationCardProps) => {
                 data.readStatus ? "opacity-50" : ""
             }`}
         >
-            <Image
+            <ImageComponent
                 className={`${
                     data.readStatus ? "" : ""
                 } p-[2.5px] rounded-full w-[40px] h-[40px] hover:scale-125 transition ease-in-out delay-100 duration-300`}

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { GroupChatDataFormType } from "../../../backend/src/types/types";
-import ImageCropper from "../components/ImageCropper";
+import ImageComponentCropper from "../components/ImageCropper";
 import { useAppContext } from "../contexts/AppContext";
 import { imageDataUrlToFile } from "../lib/imageDataUrlToFile";
 
@@ -14,9 +14,8 @@ import * as apiClient from "../apiClient";
 // image
 import { AiFillDelete } from "react-icons/ai";
 import { TbCameraPlus } from "react-icons/tb";
-import Image from "../components/Image";
+import ImageComponent from "../components/Image";
 import LoadingCircleSvg from "../components/LoadingCircleSvg";
-import defaultGroupPicture from "../statics/images/default-group-picture.svg";
 
 const MAX_LENGTH_OF_DESCRIPTION = 500;
 
@@ -176,7 +175,7 @@ const EditGroupChat = () => {
                 </h2>
 
                 {toggleCropWindow && (
-                    <ImageCropper
+                    <ImageComponentCropper
                         image={groupPictureShow}
                         ratioX={1}
                         ratioY={1}
@@ -189,7 +188,7 @@ const EditGroupChat = () => {
                 <div className="flex flex-col justify-center items-center ">
                     <div className="relative rounded-full border border-whiteAlpha2 hover:border-blue-500/50 m-2">
                         <div className="relative group size-[150px] bg-whiteAlpha2 hover:bg-blue-500/50 rounded-full">
-                            <Image
+                            <ImageComponent
                                 src={groupPictureShow}
                                 className="h-full w-full object-cover rounded-full opacity-80"
                             />

@@ -1,6 +1,6 @@
 import { AiOutlineClose } from "react-icons/ai";
 import FadeBG from "./FadeBG";
-import Image from "./Image";
+import ImageComponent from "./Image";
 
 interface PictureInFullScreenProps {
     url: string;
@@ -28,7 +28,7 @@ const PictureInFullScreen = ({ url, onClose }: PictureInFullScreenProps) => {
                     >
                         <AiOutlineClose className="size-5" />
                     </button>
-                    <Image
+                    <ImageComponent
                         src={url}
                         alt="full-screen-image"
                         className="w-fit h-fit rounded-lg"

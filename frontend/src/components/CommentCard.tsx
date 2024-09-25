@@ -8,12 +8,9 @@ import { PostCommentUserDataType } from "../../../backend/src/types/types";
 // date-fns
 import { formatDistanceToNow } from "date-fns";
 
-// image
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
-
 // context
 import { useAppContext } from "../contexts/AppContext";
-import Image from "./Image";
+import ImageComponent from "./Image";
 
 interface CommentCardProps {
     comment: PostCommentUserDataType;
@@ -27,7 +24,7 @@ const CommentCard = ({ comment, handleDeleteBtn }: CommentCardProps) => {
         <div className="grid grid-cols-[25px_1fr] items-start justify-start gap-2 m-2 relative">
             {/* profilePicture */}
             <Link to={`/profile/${comment.userId}`}>
-                <Image
+                <ImageComponent
                     src={comment.profilePictureUrl}
                     alt={comment.username}
                     className="size-[25px] object-cover rounded-full"

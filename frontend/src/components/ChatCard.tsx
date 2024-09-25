@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ChatBasicDataType } from "../../../backend/src/types/types";
 import { handleDate } from "../lib/handleDate";
-import Image from "./Image";
+import ImageComponent from "./Image";
 
 const ChatCard = ({ data: chat }: { data: ChatBasicDataType }) => {
     return (
@@ -9,7 +9,7 @@ const ChatCard = ({ data: chat }: { data: ChatBasicDataType }) => {
             to={`/chats/chat/${chat._id}`}
             className="flex justify-start items-center gap-2 p-2 relative"
         >
-            <Image
+            <ImageComponent
                 src={chat.userData.profilePictureUrl}
                 className="size-[50px] object-cover rounded-full"
                 alt={chat.userData.username}

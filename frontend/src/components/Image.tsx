@@ -1,7 +1,7 @@
 import { useState } from "react";
 import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 
-const Image = ({
+const ImageComponent = ({
     src,
     className,
     alt,
@@ -39,4 +39,4 @@ const Image = ({
     );
 };
 
-export default Image;
+export default ImageComponent;

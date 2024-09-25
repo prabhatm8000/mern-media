@@ -20,9 +20,8 @@ import { FiHome } from "react-icons/fi";
 import { MdAddCircle } from "react-icons/md";
 import { RiChat3Line } from "react-icons/ri";
 import { RxHamburgerMenu } from "react-icons/rx";
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 import FadeBG from "./FadeBG";
-import Image from "./Image";
+import ImageComponent from "./Image";
 
 const SideBar = ({
     showSideBar,
@@ -192,7 +191,7 @@ const SideBar = ({
                                 to={"/profile/me"}
                                 className="flex items-center gap-2 rounded-full w-[calc(87%)] hover:bg-whiteAlpha2 my-6 p-2 absolute bottom-0"
                             >
-                                <Image
+                                <ImageComponent
                                     className="rounded-full border border-whiteAlpha2 size-10 hover:scale-125 transition ease-in-out delay-100 duration-300"
                                     src={userData?.profilePictureUrl}
                                     alt={userData?.name}

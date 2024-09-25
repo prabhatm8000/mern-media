@@ -24,8 +24,7 @@ import { MdDelete, MdOutlineModeComment } from "react-icons/md";
 import { RxShare2 } from "react-icons/rx";
 import { SlOptions } from "react-icons/sl";
 import FadeBG from "./FadeBG";
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
-import Image from "./Image";
+import ImageComponent from "./Image";
 
 interface PostCardProps {
     postData: PostType;
@@ -125,7 +124,7 @@ const PostCard = ({ postData, handleDeleteBtn }: PostCardProps) => {
         <div className="flex gap-2">
             {/* profilePicture */}
             <Link className="size-[40px]" to={`/profile/${postData.userId}`}>
-                <Image
+                <ImageComponent
                     src={postData.profilePictureUrl}
                     alt={postData.username}
                     title={postData.username}

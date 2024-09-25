@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 import { GroupChatBasicDataType } from "../../../backend/src/types/types";
 import { handleDate } from "../lib/handleDate";
-import Image from "./Image";
+import ImageComponent from "./Image";
 
 const GroupChatCard = ({ data: chat }: { data: GroupChatBasicDataType }) => {
     return (
@@ -10,7 +10,7 @@ const GroupChatCard = ({ data: chat }: { data: GroupChatBasicDataType }) => {
             to={`/chats/group-chat/${chat._id}`}
             className="flex justify-start items-center gap-2 p-2 relative"
         >
-            <Image
+            <ImageComponent
                 src={chat.groupPictureUrl}
                 className="size-[50px] object-cover rounded-full"
                 alt={chat.name}

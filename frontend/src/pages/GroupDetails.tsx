@@ -1,22 +1,20 @@
-import { useQuery } from "react-query";
-import * as apiClient from "../apiClient";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery } from "react-query";
 import { Link, useParams } from "react-router-dom";
+import * as apiClient from "../apiClient";
 import { useAppContext } from "../contexts/AppContext";
 
 // image
-import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
-import defaultGroupPicture from "../statics/images/default-group-picture.svg";
+import { AiOutlineClose } from "react-icons/ai";
+import { BsPersonFillDash } from "react-icons/bs";
+import { IoMdArrowRoundBack } from "react-icons/io";
 import { MdEdit } from "react-icons/md";
 import type { UserDataBasicType } from "../../../backend/src/types/types";
-import SearchResultCard from "../components/SearchResultCard";
-import SearchResultCardLoading from "../components/skeletonLoadings/SearchResultCardLoading";
-import { IoMdArrowRoundBack } from "react-icons/io";
-import { BsPersonFillDash } from "react-icons/bs";
+import ImageComponent from "../components/Image";
 import LoadingCircleSvg from "../components/LoadingCircleSvg";
+import SearchResultCard from "../components/SearchResultCard";
 import GroupDetailsLoading from "../components/skeletonLoadings/GroupDetailsLoading";
-import { AiOutlineClose } from "react-icons/ai";
-import Image from "../components/Image";
+import SearchResultCardLoading from "../components/skeletonLoadings/SearchResultCardLoading";
 
 const MEMBERS_LIMIT = 7;
 
@@ -186,7 +184,7 @@ const GroupDetails = () => {
                         className={`flex flex-col gap-2 pb-2 transition delay-100 duration-300 border-b border-whiteAlpha2`}
                     >
                         <div className="relative w-fit">
-                            <Image
+                            <ImageComponent
                                 src={groupChatData.groupPictureUrl}
                                 className="w-[150px] h-[150px] object-cover rounded-full border border-whiteAlpha1"
                             />
@@ -214,7 +212,7 @@ const GroupDetails = () => {
                             <Link
                                 to={`/profile/${groupChatData.creatorUserData.userId.toString()}`}
                             >
-                                <Image
+                                <ImageComponent
                                     src={
                                         groupChatData.creatorUserData
                                             .profilePictureUrl

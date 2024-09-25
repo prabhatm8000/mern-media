@@ -29,7 +29,7 @@ import { usePostsContext } from "../contexts/PostContext";
 
 // components
 import FadeBG from "../components/FadeBG";
-import Image from "../components/Image";
+import ImageComponent from "../components/Image";
 import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import PostCard from "../components/PostCard";
 import SearchResultCard from "../components/SearchResultCard";
@@ -417,7 +417,7 @@ const Profile = () => {
                 >
                     <div className="flex items-center justify-between">
                         <div className="relative">
-                            <Image
+                            <ImageComponent
                                 src={userData?.profilePictureUrl}
                                 className="w-[150px] h-[150px] object-cover rounded-full border border-whiteAlpha1"
                             />

@@ -16,6 +16,7 @@ import {
 import * as apiClient from "../apiClient";
 import ChatMessageDateBubble from "../components/ChatMessageDateBubble";
 import GroupMessageBubble from "../components/GroupMessageBubble";
+import ImageComponent from "../components/Image";
 import LoadingCircleSvg from "../components/LoadingCircleSvg";
 import MessageBubbleLoading from "../components/skeletonLoadings/MessageBubbleLoading";
 import RoomChatDataLoading from "../components/skeletonLoadings/RoomChatDataLoading";
@@ -23,9 +24,7 @@ import { useAppContext } from "../contexts/AppContext";
 import { useGroupChatsContext } from "../contexts/GroupChatsContext";
 import { useMessageContext } from "../contexts/MessageContext";
 import { useSocketContext } from "../contexts/SocketContext";
-import defaultGroupPicture from "../statics/images/default-group-picture.svg";
 import { compressImages } from "../lib/compressImages";
-import Image from "../components/Image";
 
 const CHAT_LIMIT = 7;
 const MAX_ATTACHMENT_LIMIT = 5;
@@ -356,7 +355,7 @@ const GroupChatRoom = () => {
                 {chatData !== undefined ? (
                     <>
                         <Link to={`/chats/group-chat/${chatData._id}/details`}>
-                            <Image
+                            <ImageComponent
                                 src={chatData.groupPictureUrl}
                                 className="size-[50px] object-cover rounded-full"
                                 alt={chatData.name}
@@ -497,7 +496,7 @@ const GroupChatRoom = () => {
                     <div className="flex items-center gap-2 mx-4 p-2 bg-black1/45 rounded-lg border border-whiteAlpha2">
                         {imageDataUrls.map((data, index) => (
                             <div className="size-[60px]" key={index}>
-                                <Image
+                                <ImageComponent
                                     src={data}
                                     alt="attachments"
                                     className="size-[60px] object-cover rounded-md"
