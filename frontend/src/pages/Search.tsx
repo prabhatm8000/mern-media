@@ -57,9 +57,10 @@ const Search = () => {
         handleSearchBtn();
     };
 
+    // escape key binding
     useEffect(() => {
         if (!showAutoComplete) return;
-        
+
         const handleEscapeKeydown = (e: KeyboardEvent) => {
             if (e.key === "Escape") {
                 setShowAutoComplete(false);
@@ -128,8 +129,8 @@ const Search = () => {
                         payload: [...searchResults, ...result.data],
                     });
                     if (result.data.length < SEARCH_LIMIT) setHasMore(false);
-                    setSearchBtnClicked(false);
                 } else setHasMore(false);
+                setSearchBtnClicked(false);
             });
         }
     }, [page, searchBtnClicked]);
