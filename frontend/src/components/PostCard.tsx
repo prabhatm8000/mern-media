@@ -125,6 +125,9 @@ const PostCard = ({ postData, handleDeleteBtn }: PostCardProps) => {
             {/* profilePicture */}
             <Link className="size-[40px]" to={`/profile/${postData.userId}`}>
                 <img
+                    onError={() => {
+                        postData.profilePictureUrl = defaultProfilePicture;
+                    }}
                     src={
                         postData.profilePictureUrl === ""
                             ? defaultProfilePicture

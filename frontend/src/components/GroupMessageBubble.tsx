@@ -28,6 +28,10 @@ const GroupMessageBubble = ({ data }: { data: MessageType }) => {
                 {currUserId !== data.sender.toString() && (
                     <Link to={`/profile/${data.senderUserData.userId}`}>
                         <img
+                            onError={() => {
+                                data.senderUserData.profilePictureUrl =
+                                    defaultProfilePicture;
+                            }}
                             src={
                                 data.senderUserData.profilePictureUrl.length > 0
                                     ? data.senderUserData.profilePictureUrl

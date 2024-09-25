@@ -11,6 +11,9 @@ const GroupChatCard = ({ data: chat }: { data: GroupChatBasicDataType }) => {
             className="flex justify-start items-center gap-2 p-2 relative"
         >
             <img
+                onError={() => {
+                    chat.groupPictureUrl = defaultGroupPicture;
+                }}
                 src={
                     chat.groupPictureUrl && chat.groupPictureUrl.length > 0
                         ? chat.groupPictureUrl

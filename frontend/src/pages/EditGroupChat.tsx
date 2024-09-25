@@ -187,6 +187,9 @@ const EditGroupChat = () => {
                     <div className="relative rounded-full border border-whiteAlpha2 hover:border-blue-500/50 m-2">
                         <div className="relative group size-[150px] bg-whiteAlpha2 hover:bg-blue-500/50 rounded-full">
                             <img
+                                onError={() => {
+                                    setGroupPictureShow(defaultGroupPicture);
+                                }}
                                 src={
                                     groupPictureShow === ""
                                         ? defaultGroupPicture

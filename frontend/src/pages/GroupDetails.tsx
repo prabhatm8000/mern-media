@@ -186,6 +186,10 @@ const GroupDetails = () => {
                     >
                         <div className="relative w-fit">
                             <img
+                                onError={() => {
+                                    groupChatData.groupPictureUrl =
+                                        defaultGroupPicture;
+                                }}
                                 src={
                                     groupChatData.groupPictureUrl === ""
                                         ? defaultGroupPicture
@@ -218,6 +222,10 @@ const GroupDetails = () => {
                                 to={`/profile/${groupChatData.creatorUserData.userId.toString()}`}
                             >
                                 <img
+                                    onError={() => {
+                                        groupChatData.creatorUserData
+                                            .profilePictureUrl = defaultProfilePicture;
+                                    }}  
                                     src={
                                         groupChatData.creatorUserData
                                             .profilePictureUrl === ""

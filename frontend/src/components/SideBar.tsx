@@ -193,6 +193,11 @@ const SideBar = ({
                             >
                                 <img
                                     className="rounded-full border border-whiteAlpha2 size-10 hover:scale-125 transition ease-in-out delay-100 duration-300"
+                                    onError={() => {
+                                        if (userData)
+                                            userData.profilePictureUrl =
+                                                defaultProfilePicture;
+                                    }}
                                     src={
                                         userData?.profilePictureUrl === ""
                                             ? defaultProfilePicture

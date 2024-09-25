@@ -418,6 +418,10 @@ const Profile = () => {
                     <div className="flex items-center justify-between">
                         <div className="relative">
                             <img
+                                onError={() => {
+                                    userData.profilePictureUrl =
+                                        defaultProfilePicture;
+                                }}
                                 src={
                                     userData.profilePictureUrl === ""
                                         ? defaultProfilePicture

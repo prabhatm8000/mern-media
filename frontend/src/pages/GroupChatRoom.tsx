@@ -356,6 +356,10 @@ const GroupChatRoom = () => {
                     <>
                         <Link to={`/chats/group-chat/${chatData._id}/details`}>
                             <img
+                                onError={() => {
+                                    chatData.groupPictureUrl =
+                                        defaultGroupPicture;
+                                }}
                                 src={
                                     chatData.groupPictureUrl &&
                                     chatData.groupPictureUrl.length > 0

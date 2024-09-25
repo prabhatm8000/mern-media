@@ -10,6 +10,9 @@ const ChatCard = ({ data: chat }: { data: ChatBasicDataType }) => {
             className="flex justify-start items-center gap-2 p-2 relative"
         >
             <img
+                onError={() => {
+                    chat.userData.profilePictureUrl = defaultProfilePicture;
+                }}
                 src={
                     chat.userData && chat.userData.profilePictureUrl.length > 0
                         ? chat.userData.profilePictureUrl

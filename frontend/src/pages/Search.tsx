@@ -33,7 +33,11 @@ const Search = () => {
 
     useEffect(() => {
         let id: number;
-        if (searchQuery.length > 1 && !autoCompleteClicked) {
+        if (
+            searchQuery.length > 1 &&
+            !autoCompleteClicked &&
+            !searchBtnClicked
+        ) {
             // debouncing
             id = setTimeout(fetchAutoComplete, 1500);
         } else {
@@ -52,6 +56,22 @@ const Search = () => {
         setSearchQuery(e.currentTarget.innerText);
         handleSearchBtn();
     };
+
+    useEffect(() => {
+        if (!showAutoComplete) return;
+        
+        const handleEscapeKeydown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setShowAutoComplete(false);
+            }
+        };
+
+        addEventListener("keydown", handleEscapeKeydown);
+
+        return () => {
+            removeEventListener("keydown", handleEscapeKeydown);
+        };
+    }, [showAutoComplete]);
     // #endregion
 
     // search
@@ -148,13 +168,13 @@ const Search = () => {
 
                 {/* SearchAutoComplete */}
                 {showAutoComplete && (
-                    <div className="relative flex justify-center">
+                    <div className="relative flex justify-center mt-2">
                         {autoComplete && (
-                            <div className="absolute px-3 mt-1 rounded-md bg-neutral-700 flex flex-col w-[240px] md:w-[440px] lg:w-[640px]">
+                            <div className="absolute px-3 mt-1 rounded-md bg-stone-800 flex flex-col gap-1 w-[240px] md:w-[440px] lg:w-[640px]">
                                 {autoComplete.map((item, i) => {
                                     return (
                                         <h4
-                                            className={`cursor-pointer text-md text-neutral-400 hover:text-neutral-300 border-0 ${
+                                            className={`cursor-pointer text-md text-stone-400 hover:text-stone-100 py-1 border-0 ${
                                                 i !== autoComplete.length - 1
                                                     ? "border-b-[1px] border-neutral-600"
                                                     : ""
@@ -173,7 +193,7 @@ const Search = () => {
             </div>
 
             {/* SearchResults */}
-            <div className="flex flex-col overflow-y-auto overflow-x-hidden items-center gap-3 rounded-lg border border-whiteAlpha2 p-4">
+            <div className="flex flex-col overflow-y-auto overflow-x-hidden items-center gap-2 rounded-lg border border-whiteAlpha2 p-4">
                 {searchResults.length > 0 &&
                     searchResults.map((searchResult, i) => {
                         if (searchResults.length === i + 1) {

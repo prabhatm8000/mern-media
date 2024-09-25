@@ -48,13 +48,8 @@ const EditUserData = () => {
         apiClient.fetchUserDataById("me")
     );
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        setValue,
-        watch,
-    } = useForm<UserDataFormType>();
+    const { register, handleSubmit, reset, setValue, watch } =
+        useForm<UserDataFormType>();
 
     useEffect(() => {
         reset(userData);
@@ -62,7 +57,10 @@ const EditUserData = () => {
 
     const { mutate, isLoading } = useMutation(apiClient.editUserData, {
         onSuccess: async () => {
-            showToast({ message: "Changes saved, Profile Updated!", type: "SUCCESS" });
+            showToast({
+                message: "Changes saved, Profile Updated!",
+                type: "SUCCESS",
+            });
             navigate("/profile/me");
         },
         onError: (error: Error) => {
@@ -209,6 +207,11 @@ const EditUserData = () => {
                     <div className="relative rounded-full border border-whiteAlpha2 hover:border-blue-500/50 m-2">
                         <div className="relative group size-[150px] bg-whiteAlpha2 hover:bg-blue-500/50 rounded-full">
                             <img
+                                onError={() => {
+                                    setProfilePictureShow(
+                                        defaultProfilePicture
+                                    );
+                                }}
                                 src={
                                     profilePictureShow === ""
                                         ? defaultProfilePicture

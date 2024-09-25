@@ -357,6 +357,10 @@ const ChatRoom = () => {
                     <>
                         <Link to={`/profile/${chatData.userData.userId}`}>
                             <img
+                                onError={() => {
+                                    chatData.userData.profilePictureUrl =
+                                        defaultProfilePicture;
+                                }}
                                 src={
                                     chatData.userData.profilePictureUrl.length >
                                     0

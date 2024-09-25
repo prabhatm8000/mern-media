@@ -1,5 +1,6 @@
 import { AiOutlineClose } from "react-icons/ai";
 import FadeBG from "./FadeBG";
+import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 
 interface PictureInFullScreenProps {
     url: string;
@@ -26,6 +27,9 @@ const PictureInFullScreen = ({ url, onClose }: PictureInFullScreenProps) => {
                         <AiOutlineClose className="size-5" />
                     </button>
                     <img
+                        onError={() => {
+                            url = defaultProfilePicture;
+                        }}
                         src={url}
                         alt="full-screen-image"
                         className="w-fit h-fit rounded-lg"

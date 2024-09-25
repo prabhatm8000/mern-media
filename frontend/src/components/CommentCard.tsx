@@ -28,6 +28,9 @@ const CommentCard = ({ comment, handleDeleteBtn }: CommentCardProps) => {
             {/* profilePicture */}
             <Link to={`/profile/${comment.userId}`}>
                 <img
+                    onError={() => {
+                        comment.profilePictureUrl = defaultProfilePicture;
+                    }}
                     src={
                         comment.profilePictureUrl.length > 0
                             ? comment.profilePictureUrl

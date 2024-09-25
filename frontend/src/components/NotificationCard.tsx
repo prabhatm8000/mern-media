@@ -21,6 +21,9 @@ const NotificationCard = ({ data }: NotificationCardProps) => {
         >
             <img
                 className={`${data.readStatus ? "" : ""} p-[2.5px] rounded-full w-[40px] h-[40px] hover:scale-125 transition ease-in-out delay-100 duration-300`}
+                onError={() => {
+                    data.notificationFrom.profilePictureUrl = defaultProfilePicture;
+                }}
                 src={
                     data.notificationFrom.profilePictureUrl === ""
                         ? defaultProfilePicture
