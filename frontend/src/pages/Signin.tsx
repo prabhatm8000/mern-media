@@ -28,7 +28,7 @@ const Signin = () => {
         onSuccess: async () => {
             showToast({
                 type: "SUCCESS",
-                message: `Account creation successfull! Hello, ${watch(
+                message: `Account created successfull! Hello, ${watch(
                     "username"
                 )} 👋🏽`,
             });

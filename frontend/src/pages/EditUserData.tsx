@@ -204,8 +204,8 @@ const EditUserData = () => {
 
                 {/* image select & preview */}
                 <div className="flex flex-col justify-center items-center ">
-                    <div className="relative rounded-full border border-whiteAlpha2 hover:border-blue-500/50 m-2">
-                        <div className="relative group size-[150px] bg-whiteAlpha2 hover:bg-blue-500/50 rounded-full">
+                    <div className="relative rounded-full border m-2">
+                        <div className="relative group size-[150px] rounded-full">
                             <img
                                 onError={() => {
                                     setProfilePictureShow(
@@ -213,7 +213,7 @@ const EditUserData = () => {
                                     );
                                 }}
                                 src={
-                                    profilePictureShow === ""
+                                    profilePictureShow === "" || profilePictureShow === " "
                                         ? defaultProfilePicture
                                         : profilePictureShow
                                 }
