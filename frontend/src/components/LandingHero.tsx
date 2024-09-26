@@ -1,7 +1,7 @@
 const LandingHero = () => {
     return (
         <div className="relative mt-20 md:pb-48 flex flex-col justify-center">
-            <h1 className="text-5xl sm:text-6xl md:text-7xl text-center font-bloodySunday mb-4">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bloodySunday mb-4">
                 MernMedia
             </h1>
 

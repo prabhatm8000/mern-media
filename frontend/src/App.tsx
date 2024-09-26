@@ -16,7 +16,6 @@ import { useSocketContext } from "./contexts/SocketContext";
 import LoadingPage from "./pages/LoadingPage";
 
 import ColumnLayout from "./layouts/ColumnLayout";
-import AuthLanding from "./pages/AuthLanding";
 // import EditUserData from "./pages/EditUserData";
 // import Home from "./pages/Home";
 // import Login from "./pages/Login";
@@ -28,7 +27,7 @@ import AuthLanding from "./pages/AuthLanding";
 
 // const Login = lazy(() => import("./pages/Login"));
 // const Signin = lazy(() => import("./pages/Signin"));
-const Auth = lazy(() => import("./pages/AuthLanding"));
+const AuthLanding = lazy(() => import("./pages/AuthLanding"));
 const Home = lazy(() => import("./pages/Home"));
 const EditUserData = lazy(() => import("./pages/EditUserData"));
 const Profile = lazy(() => import("./pages/Profile"));
