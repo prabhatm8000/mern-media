@@ -31,7 +31,7 @@ export type UserDataFormType = {
     link2: string;
     link3: string;
     name: string;
-    profilePicture: FileList;
+    profilePicture: FileList | null;
     profilePictureUrl: string;
 };
 
@@ -75,6 +75,7 @@ const EditUserData = () => {
         // if imageUrl not equal to delete image return
         setValue("profilePictureUrl", "");
         setProfilePictureShow("");
+        setValue("profilePicture", null);
     };
 
     const onSubmit = (userDataForm: UserDataFormType) => {
@@ -204,8 +205,8 @@ const EditUserData = () => {
 
                 {/* image select & preview */}
                 <div className="flex flex-col justify-center items-center ">
-                    <div className="relative rounded-full border m-2">
-                        <div className="relative group size-[150px] rounded-full">
+                    <div className="relative rounded-full border border-whiteAlpha2 hover:border-blue-500/50 m-2">
+                        <div className="relative group size-[150px] bg-whiteAlpha2 hover:bg-blue-500/50 rounded-full">
                             <ImageComponent
                                 src={profilePictureShow}
                                 className="h-full w-full object-cover rounded-full opacity-80"

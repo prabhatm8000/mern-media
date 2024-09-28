@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import defaultProfilePicture from "../statics/images/default-profile-picture.svg";
 
 const ImageComponent = ({
@@ -16,11 +16,16 @@ const ImageComponent = ({
     title?: string;
     onClick?: (e: React.MouseEvent<HTMLImageElement>) => void;
 }) => {
-    const [imgSrc, setImgSrc] = useState<string | undefined>(src);
+    const [imgSrc, setImgSrc] = useState<string | undefined>(undefined);
+    useEffect(() => {
+        setImgSrc(src);
+    }, [src]);
+
     return (
         <img
             onError={() => {
                 setImgSrc(srcOnError ? srcOnError : defaultProfilePicture);
+                console.log("error");
             }}
             src={
                 !imgSrc ||

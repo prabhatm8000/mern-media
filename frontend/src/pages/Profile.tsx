@@ -478,39 +478,39 @@ const Profile = () => {
                         {formatDistanceToNow(new Date(userData.joinedAt))} ago
                     </div>
                     <div className="flex flex-col gap-0 text-md text-blue-400 underline">
-                        {userData.link1 && (
+                        {userData.link1.trim().length > 0 && (
                             <span className="flex items-center gap-1">
                                 <BiLink />
                                 <a
                                     className="w-[200px] overflow-hidden text-ellipsis"
                                     target="_blank"
-                                    href={userData.link1}
+                                    href={userData.link1.trim()}
                                 >
-                                    {userData.link1}
+                                    {userData.link1.trim()}
                                 </a>
                             </span>
                         )}
-                        {userData.link2 && (
+                        {userData.link2.trim().length > 0 && (
                             <span className="flex items-center gap-1">
                                 <BiLink />
                                 <a
                                     className="w-[200px] overflow-hidden text-ellipsis"
                                     target="_blank"
-                                    href={userData.link2}
+                                    href={userData.link2.trim()}
                                 >
-                                    {userData.link2}
+                                    {userData.link2.trim()}
                                 </a>
                             </span>
                         )}
-                        {userData.link3 && (
+                        {userData.link3.trim().length > 0 && (
                             <span className="flex items-center gap-1">
                                 <BiLink />
                                 <a
                                     className="w-[200px] overflow-hidden text-ellipsis"
                                     target="_blank"
-                                    href={userData.link3}
+                                    href={userData.link3.trim()}
                                 >
-                                    {userData.link3}
+                                    {userData.link3.trim()}
                                 </a>
                             </span>
                         )}
