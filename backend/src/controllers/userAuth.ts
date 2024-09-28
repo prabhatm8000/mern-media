@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import UserAuth from "../models/userAuth";
 import UserData from "../models/userData";
 import Follow from "../models/follow";
+import mongoose from "mongoose";
 
 export const signin = async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -14,6 +15,8 @@ export const signin = async (req: Request, res: Response) => {
         return res.status(400).json({ message: errors.array() });
     }
 
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let user = await UserAuth.findOne({
             username: req.body.username,
@@ -23,24 +26,24 @@ export const signin = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "Username already exists" });
         }
 
-        // req.body -> {username, password}
+        // req.body -> {username, email, password}
         user = new UserAuth(req.body);
-        await user.save();
+        await user.save({ session });
 
         // init UserData for new user
         const userData = new UserData({
-            description: " ",
+            description: "",
             followerCount: 0,
             followingCount: 0,
-            link1: " ",
-            link2: " ",
-            link3: " ",
-            name: " ",
+            link1: "",
+            link2: "",
+            link3: "",
+            name: "",
             postCount: 0,
-            profilePictureUrl: " ",
+            profilePictureUrl: "",
             userId: user._id,
         });
-        await userData.save();
+        await userData.save({ session });
 
         // init Follow for new user
         const follow = new Follow({
@@ -48,7 +51,7 @@ export const signin = async (req: Request, res: Response) => {
             followings: [],
             userId: user.id,
         });
-        await follow.save();
+        await follow.save({ session });
 
         const token = jwt.sign(
             { userId: user._id },
@@ -68,9 +71,13 @@ export const signin = async (req: Request, res: Response) => {
             maxAge: 3 * 24 * 60 * 60 * 1000, // 3days in milesec
         });
 
+        await session.commitTransaction();
+        session.endSession();
         return res.status(200).send({ message: "User signed in" });
     } catch (error) {
         // console.log("Error while signin", error);
+        await session.abortTransaction();
+        session.endSession();
         res.status(500).send({ message: "Something went wrong" });
     }
 };

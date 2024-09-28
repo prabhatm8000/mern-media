@@ -2,11 +2,13 @@ export type UserAuthType = {
     _id: any;
     username: string;
     password: string;
+    email: string;
 };
 
 export type UserAuthData = {
     username: string;
     password: string;
+    email: string;
 };
 
 export type UserDataBasicType = {

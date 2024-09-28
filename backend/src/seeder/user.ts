@@ -11,8 +11,11 @@ const addfakeUser = async (): Promise<{
 }> => {
     const data = {
         username: faker.internet.userName(),
+        email: "@gmail.com",
         password: "pass1254",
     };
+
+    data.email = data.username + data.email;
 
     let user = await UserAuth.findOne({
         username: data.username,

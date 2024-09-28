@@ -4,7 +4,6 @@ const userDataScheme = new mongoose.Schema(
     {
         description: {
             type: String,
-            required: true,
         },
         followerCount: {
             type: Number,
@@ -14,12 +13,11 @@ const userDataScheme = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        link1: { type: String, required: true },
-        link2: { type: String, required: true },
-        link3: { type: String, required: true },
+        link1: { type: String },
+        link2: { type: String },
+        link3: { type: String },
         name: {
             type: String,
-            required: true,
         },
         postCount: {
             type: Number,
@@ -27,7 +25,6 @@ const userDataScheme = new mongoose.Schema(
         },
         profilePictureUrl: {
             type: String,
-            required: true,
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,

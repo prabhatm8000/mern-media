@@ -25,8 +25,9 @@ export const editUserData = async (req: Request, res: Response) => {
         // 1. new image is send & there is already an image
         // 2. no image is send & there is no image url in newUserData
         if (
-            (imageFile && userData.profilePictureUrl.length > 0) ||
-            (!imageFile && newUserData.profilePictureUrl.length === 0)
+            userData.profilePictureUrl &&
+            userData.profilePictureUrl.length > 0 &&
+            (imageFile || newUserData.profilePictureUrl.length === 0)
         ) {
             await deleteImageByURL(
                 userData.profilePictureUrl,
@@ -74,7 +75,7 @@ export const getUserDataById = async (req: Request, res: Response) => {
                     as: "userAuthData",
                 },
             },
-            {$unwind: "$userAuthData"},
+            { $unwind: "$userAuthData" },
             {
                 $project: {
                     description: 1,

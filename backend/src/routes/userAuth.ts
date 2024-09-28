@@ -20,6 +20,7 @@ userAuth.post(
     "/sign-in",
     [
         check("username", "Username is required"),
+        check("email", "Email is required").isEmail().withMessage("Invalid Email"),
         check("password", "Password must have 6 characters").isLength({
             min: 6,
         }),
